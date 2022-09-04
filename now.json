@@ -1,15 +1,16 @@
 {
-    "version": 2,
-    "builds": [
+  "version": 2,
+  "name": "capstone-be",
+  "builds": [
       {
-        "src": "dist/main.js",
-        "use": "@now/node-server"
+          "src": "dist/main.js",
+          "use": "@vercel/node"
       }
-    ],
-    "routes": [
+  ],
+  "routes": [
       {
-        "src": "/(.*)",
-        "dest": "dist/main.js"
+          "src": "/(.*)",
+          "dest": "dist/main.js"
       }
-    ]
-  }
+  ]
+}
