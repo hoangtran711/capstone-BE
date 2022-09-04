@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // set prefix for route
   app.setGlobalPrefix('api/v1', {
-    exclude: [{ path: '/', method: RequestMethod.GET }],
+    exclude: [{ path: '/health', method: RequestMethod.ALL }],
   });
 
   // config swagger

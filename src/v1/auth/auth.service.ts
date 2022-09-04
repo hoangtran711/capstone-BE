@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStudentDTO } from './dtos/create-student.dto';
+import { ErrorMessage } from '@common/exception/error-message';
 
 @Injectable()
 export class AuthService {
@@ -9,6 +10,6 @@ export class AuthService {
     return user;
   }
   removeUser(): string {
-    return 'Removed';
+    return ErrorMessage.INVALID_JWT;
   }
 }

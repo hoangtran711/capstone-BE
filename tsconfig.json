@@ -12,13 +12,17 @@
     "baseUrl": "./src",
     "incremental": true,
     "skipLibCheck": true,
+    "moduleResolution": "node",
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@common": ["common/*"]
+      "@common/*": ["common/*"],
+      "@schemas/*": ["schemas/*"],
+      "@services/*": ["services/*"],
+      "@dtos/*": ["dtos/*"]
     }
   }
 }
