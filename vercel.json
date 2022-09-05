@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "capstone-be",
   "builds": [
       {
           "src": "dist/main.js",
