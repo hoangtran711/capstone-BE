@@ -1,19 +1,31 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEmail,
-  IsAlphanumeric,
   Contains,
+  IsAlphanumeric,
+  IsEmail,
+  IsString,
   Length,
 } from 'class-validator';
 
-export class CreateStudentDTO {
-  @ApiProperty({
-    default: 'trannbhoang@kms-technology.com',
-  })
+export class RequestLogInByEmailDto {
+  @ApiProperty()
+  @IsEmail()
+  public email: string;
+
+  @ApiProperty()
+  @IsString()
+  public password: string;
+}
+
+export class CreateUserDTO {
+  @ApiProperty()
   @IsEmail()
   @Contains('@student.hcmute.edu.vn')
   readonly email: string;
+
+  @ApiProperty()
+  @IsString()
+  readonly username: string;
 
   @ApiProperty()
   @IsString()
@@ -36,4 +48,8 @@ export class CreateStudentDTO {
   @ApiProperty()
   @IsString()
   readonly phoneNumber: string;
+
+  @ApiProperty()
+  @IsString()
+  readonly address: string;
 }

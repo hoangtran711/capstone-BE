@@ -1,1 +1,2 @@
-export * from './exception/error-message';
+export * from './interfaces';
+export * from './exception';

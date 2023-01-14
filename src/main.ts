@@ -1,6 +1,7 @@
-import { RequestMethod } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { EnvironmentConfig } from 'config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -9,12 +10,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: '/health', method: RequestMethod.ALL }],
   });
+  app.useGlobalPipes(new ValidationPipe());
 
   // config swagger
   const config = new DocumentBuilder()
     .setTitle('Capstone Project')
     .setDescription('Capstone project api')
     .setVersion('1.0')
+    .addBearerAuth()
     .setBasePath('api/v1')
     .build();
   const document = SwaggerModule.createDocument(app, config, {
@@ -22,6 +25,6 @@ async function bootstrap() {
   });
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(EnvironmentConfig.PORT || 3000);
 }
 bootstrap();
