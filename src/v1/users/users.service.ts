@@ -1,33 +1,26 @@
-import { RoleEnum } from '@common/interfaces';
-import { Injectable } from '@nestjs/common';
-import { User } from 'entities';
+import { ErrorMessage } from '@common/exception';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from '@schemas/user.schema';
+import { Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [
-    {
-      email: 'trannbhoang@kms-technology.com',
-      emailVerified: true,
-      password: '$2b$10$mm7WrBVOhczPErOUcM8ed.OEEoceVCnP9Cbs7OcRahCq7U5SpVlaq',
-      username: 'hoangtran711',
-      avatar: '',
-      role: RoleEnum.Admin,
-      dateOfBirth: '07/11/2000',
-      phoneNumber: '0586434251',
-      address: '53 Tran Ke Xuong quan Phu Nhuan',
-      uid: uuid(),
-    },
-  ];
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async getAll(): Promise<User[]> {
-    return this.users;
+    return await this.userModel.find().exec();
   }
-  async findOne(email: string): Promise<User | undefined> {
-    return this.users.find((user) => user.email === email);
+  async findOne(id: string): Promise<User | undefined> {
+    return await this.userModel.findById(id).exec();
   }
 
-  async register(
+  async findByUsername(username: string): Promise<User> {
+    return await this.userModel.findOne({ username });
+  }
+
+  async createUser(
     username: string,
     email: string,
     password: string,
@@ -36,20 +29,37 @@ export class UsersService {
     dateOfBirth?: string,
     phoneNumber?: string,
     address?: string,
+    role?: string,
   ): Promise<User> {
     const uid = uuid();
-    const index = this.users.push({
+    const existing = await this.userModel
+      .findOne({ $or: [{ email: email }, { username: username }] })
+      .exec();
+    if (existing) {
+      throw new BadRequestException(
+        ErrorMessage.Auth_UsernameAlreadyRegistered,
+      );
+    }
+
+    const newUser = await new this.userModel({
       username,
       email,
-      password,
       firstName,
       lastName,
       dateOfBirth,
       phoneNumber,
-      uid,
       address,
+      uid,
+      role,
+      password,
       emailVerified: false,
-    });
-    return this.users[index];
+    }).save();
+
+    return newUser;
+  }
+
+  async findOneAndDelete(id: string): Promise<User> {
+    const user = await this.userModel.findByIdAndDelete(id);
+    return user;
   }
 }

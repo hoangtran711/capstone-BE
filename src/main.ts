@@ -5,7 +5,7 @@ import { EnvironmentConfig } from 'config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   // set prefix for route
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: '/health', method: RequestMethod.ALL }],

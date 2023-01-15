@@ -1,10 +1,11 @@
+import { RoleEnum } from '@common/interfaces';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type UserDocument = UserSchema & Document;
+export type UserDocument = User & Document;
 
 @Schema()
-export class UserSchema {
+export class User {
   @Prop({ required: true })
   firstName: string;
 
@@ -18,13 +19,28 @@ export class UserSchema {
   password: string;
 
   @Prop({ required: true })
-  dateOfBirth: Date;
+  dateOfBirth: string;
 
   @Prop({ required: true })
   username: string;
 
   @Prop({ required: true })
   phoneNumber: string;
+
+  @Prop({ required: true })
+  uid: string;
+
+  @Prop({})
+  address: string;
+
+  @Prop({})
+  avatar: string;
+
+  @Prop({ required: true })
+  role: RoleEnum;
+
+  @Prop({ required: true })
+  emailVerified: boolean;
 }
 
-export const UserSchemaSchema = SchemaFactory.createForClass(UserSchema);
+export const UserSchema = SchemaFactory.createForClass(User);
