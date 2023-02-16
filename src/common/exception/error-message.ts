@@ -37,9 +37,6 @@ export enum ErrorMessage {
 
   Whitelist_Not_In_Whitelist = "User don't have whitelist access",
 
-  Sale_MarketClosed = 'Market Closed',
-  Sale_MarketNotStarted = 'Market Not Started',
-  Sale_WhitelistRequired = 'Whitelist Required',
-  Sale_MarketExceedSupply = 'Market Exceed Supply',
-  Sale_TokenNotAllowed = 'Token Not Allowed',
+  Project_AlreadyCreated = 'Project with this name already created',
+  Project_NotFound = 'Project Not Found',
 }

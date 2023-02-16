@@ -1,5 +1,5 @@
 import { RoleEnum } from '@common/interfaces';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsAlphanumeric, IsEmail, IsEnum, IsString } from 'class-validator';
 
 export class CreateUserDTO {
@@ -40,3 +40,6 @@ export class CreateUserDTO {
   @IsEnum(RoleEnum)
   readonly role: RoleEnum;
 }
+export class RegisterUserDTO extends OmitType(CreateUserDTO, [
+  'role',
+] as const) {}

@@ -1,12 +1,14 @@
 import { ErrorMessage } from '@common/exception';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { RolesGuard } from '@common/roles';
+import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '@schemas/user.schema';
 import { hash, genSalt } from 'bcrypt';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
+@UseGuards(RolesGuard)
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
@@ -21,6 +23,9 @@ export class UsersService {
     return await this.userModel.findOne({
       $or: [{ email: username }, { username: username }],
     });
+  }
+  async findOneMultiple(filter: FilterQuery<UserDocument>): Promise<User> {
+    return this.userModel.findOne(filter);
   }
 
   async createUser(

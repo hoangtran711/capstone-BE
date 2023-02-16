@@ -1,4 +1,5 @@
 import { IsNumber, IsString } from 'class-validator';
+import { JwtConfig } from 'config';
 
 export class ResponseTokenDto {
   @IsString()
@@ -13,7 +14,7 @@ export class ResponseTokenDto {
   static fromRaw(raw: any): ResponseTokenDto {
     return {
       token: raw.token,
-      expiresIn: raw.expiresIn,
+      expiresIn: JwtConfig.JWT_EXPIRATION,
       role: raw.role,
     } as ResponseTokenDto;
   }

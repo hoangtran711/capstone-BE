@@ -28,7 +28,7 @@ export const LogConfig = {
 
 export const JwtConfig = {
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRATION: parseInt(process.env.JWT_EXPIRATION ?? '3600'),
+  JWT_EXPIRATION: parseInt(process.env.JWT_EXPIRATION ?? '1h'),
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE ?? 'JWT_APIs',
 };
@@ -37,3 +37,5 @@ export const UploadFileConfig = {
   LIMIT_FILE_SIZE: 1024 * 1024 * 2,
   LIMIT_FILE_NAME: 255,
 };
+
+export * from './project';
