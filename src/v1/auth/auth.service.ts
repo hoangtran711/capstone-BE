@@ -9,7 +9,7 @@ export class AuthService {
   constructor(private usersService: UsersService) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findByUsername(username);
+    const user = await this.usersService.findByUsernameOrEmail(username);
     if (!user) {
       throw new UnauthorizedException(ErrorMessage.Auth_InvalidEmailPassword);
     }
@@ -20,6 +20,6 @@ export class AuthService {
     const tokenData = JWTUtil.createJWT(user);
     const cookieData = JWTUtil.createCookie(tokenData);
 
-    return [cookieData, tokenData];
+    return [cookieData, tokenData, user.role];
   }
 }

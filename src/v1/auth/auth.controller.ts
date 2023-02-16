@@ -24,8 +24,11 @@ export class AuthController {
   async logIn(@Body() payload: RequestLogInByEmailDto) {
     const { email, password } = payload;
 
-    const [, tokenData] = await this.authService.validateUser(email, password);
-    const data = ResponseTokenDto.fromRaw(tokenData);
+    const [, tokenData, userRole] = await this.authService.validateUser(
+      email,
+      password,
+    );
+    const data = ResponseTokenDto.fromRaw({ ...tokenData, role: userRole });
 
     return GenericResponse.success(data);
   }

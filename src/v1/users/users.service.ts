@@ -2,6 +2,7 @@ import { ErrorMessage } from '@common/exception';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '@schemas/user.schema';
+import { hash, genSalt } from 'bcrypt';
 import { Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
 
@@ -16,8 +17,10 @@ export class UsersService {
     return await this.userModel.findById(id).exec();
   }
 
-  async findByUsername(username: string): Promise<User> {
-    return await this.userModel.findOne({ username });
+  async findByUsernameOrEmail(username: string): Promise<User> {
+    return await this.userModel.findOne({
+      $or: [{ email: username }, { username: username }],
+    });
   }
 
   async createUser(
@@ -31,6 +34,7 @@ export class UsersService {
     address?: string,
     role?: string,
   ): Promise<User> {
+    const saltRounds = 10;
     const uid = uuid();
     const existing = await this.userModel
       .findOne({ $or: [{ email: email }, { username: username }] })
@@ -40,6 +44,8 @@ export class UsersService {
         ErrorMessage.Auth_UsernameAlreadyRegistered,
       );
     }
+    const salt = await genSalt(saltRounds);
+    const hashPassword = await hash(password, salt);
 
     const newUser = await new this.userModel({
       username,
@@ -51,7 +57,7 @@ export class UsersService {
       address,
       uid,
       role,
-      password,
+      password: hashPassword,
       emailVerified: false,
     }).save();
 
