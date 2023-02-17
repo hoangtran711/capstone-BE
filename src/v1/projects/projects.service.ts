@@ -19,6 +19,10 @@ export class ProjectsService {
     return await this.internalGetProjectByUserId(userId);
   }
 
+  async getAllProject(): Promise<Project[]> {
+    return await this.projectModel.find();
+  }
+
   async createProject(projectDto: CreateProjectDto) {
     const {
       projectName,

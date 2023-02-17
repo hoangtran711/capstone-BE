@@ -33,6 +33,19 @@ export class ProjectsController {
 
   @ApiResponse({
     status: 200,
+    description: 'Get Projects successfully',
+  })
+  @ApiOperation({ summary: 'Get project of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
+  @Get('/')
+  async getAllProject() {
+    const project = await this.projectsService.getAllProject();
+    return GenericResponse.success(project);
+  }
+
+  @ApiResponse({
+    status: 200,
     description: 'Create Project successfully',
   })
   @ApiOperation({ summary: 'Create project of system' })
