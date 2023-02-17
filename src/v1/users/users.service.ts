@@ -24,6 +24,10 @@ export class UsersService {
       $or: [{ email: username }, { username: username }],
     });
   }
+
+  async findByRole(role: string): Promise<User[]> {
+    return await this.userModel.find({ role: role }).exec();
+  }
   async findOneMultiple(filter: FilterQuery<UserDocument>): Promise<User> {
     return this.userModel.findOne(filter);
   }

@@ -1,10 +1,6 @@
 import { ErrorMessage } from '@common/exception';
 import { RoleEnum } from '@common/interfaces';
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { User } from 'entities';
@@ -68,11 +64,11 @@ export class AuthService {
     const user = await this.usersService.findByUsernameOrEmail(username);
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new BadRequestException(ErrorMessage.Auth_InvalidEmailPassword);
     }
     const isMatchPassword = await compare(pass, user.password);
     if (!isMatchPassword) {
-      throw new UnauthorizedException();
+      throw new BadRequestException(ErrorMessage.Auth_InvalidEmailPassword);
     }
     return user;
   }

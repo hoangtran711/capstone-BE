@@ -8,6 +8,7 @@ import {
   Get,
   Param,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -42,11 +43,51 @@ export class UsersController {
 
   @ApiResponse({
     status: 200,
+    description: 'GET all teacher successfully',
+  })
+  @ApiOperation({ summary: 'GET All teacher of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin)
+  @Get()
+  async getAllTeacher() {
+    const users = await this.usersService.findByRole(RoleEnum.Admin);
+    return GenericResponse.success(users);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'GET all student successfully',
+  })
+  @ApiOperation({ summary: 'GET All student of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
+  @Get()
+  async getAllStudents() {
+    const users = await this.usersService.findByRole(RoleEnum.EndUser);
+    return GenericResponse.success(users);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'GET detail me successfully',
+  })
+  @ApiOperation({ summary: 'GET Detail of users' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
+  @Get('/me')
+  async getDetailCurrentUser(@Req() req) {
+    const id = req.user.id;
+    const user = await this.usersService.findOne(id);
+    return GenericResponse.success(user);
+  }
+
+  @ApiResponse({
+    status: 200,
     description: 'GET detail user successfully',
   })
   @ApiOperation({ summary: 'GET Detail of users' })
   @ApiBearerAuth()
-  @Roles(RoleEnum.Admin)
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
   @Get(':id')
   async getDetailUser(@Param('id') id: string) {
     const user = await this.usersService.findOne(id);
