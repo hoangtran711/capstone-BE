@@ -10,6 +10,7 @@ import { compare } from 'bcrypt';
 import { User } from 'entities';
 import { RegisterUserDTO } from 'shared';
 import { UsersService } from 'v1/users/users.service';
+import { RequestLogInByEmailDto } from './dtos/auth-request.dto';
 
 @Injectable()
 export class AuthService {
@@ -50,16 +51,14 @@ export class AuthService {
     return newUser;
   }
 
-  async login(user): Promise<any> {
+  async login(loginData: RequestLogInByEmailDto): Promise<any> {
+    const { username, password } = loginData;
+    const user = (await this.validateUser(username, password)) as any;
     const payload = {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
       email: user.email,
       username: user.username,
-      phoneNumber: user.phoneNumber,
-      uid: user.uid,
       role: user.role,
+      id: user.id,
     };
 
     const token = this.jwtService.sign(payload);

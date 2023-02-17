@@ -1,13 +1,10 @@
 import GenericResponse from '@common/msg/generic-response';
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { User } from 'entities';
-import { Request } from 'express';
 import { RegisterUserDTO } from 'shared';
 import { AuthService } from './auth.service';
 import { RequestLogInByEmailDto } from './dtos/auth-request.dto';
 import { ResponseTokenDto } from './dtos/auth-response.dto';
-import { LocalAuthGuard } from './local-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -33,12 +30,9 @@ export class AuthController {
   })
   @ApiOperation({ summary: 'Login into system' })
   @ApiBody({ type: RequestLogInByEmailDto })
-  @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async logIn(@Req() request: Request) {
-    const user = request.user;
-
-    const [tokenData, userRole] = await this.authService.login(user as User);
+  async logIn(@Body() loginDto: RequestLogInByEmailDto) {
+    const [tokenData, userRole] = await this.authService.login(loginDto);
 
     const data = ResponseTokenDto.fromRaw({ token: tokenData, role: userRole });
 
