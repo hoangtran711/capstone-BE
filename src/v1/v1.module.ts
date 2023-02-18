@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { StudentModule } from './student/student.module';
 import { RequestsModule } from './requests/requests.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { ProjectJoinedModule } from './project-joined/project-joined.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UploadsModule } from './uploads/uploads.module';
     StudentModule,
     RequestsModule,
     UploadsModule,
+    ProjectJoinedModule,
   ],
   controllers: [],
   providers: [],
