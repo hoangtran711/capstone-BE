@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, ObjectId } from 'mongoose';
+import { Document } from 'mongoose';
 import { RequestStatus } from 'shared/enums/request.enum';
 
 export type RequestDocument = Request & Document;
@@ -7,7 +7,13 @@ export type RequestDocument = Request & Document;
 @Schema()
 export class Request {
   @Prop({ required: true })
-  projectId: ObjectId;
+  projectId: string;
+
+  @Prop({ required: true })
+  date: string;
+
+  @Prop({ required: true })
+  proof: string[];
 
   @Prop({ required: true })
   reason: Request;

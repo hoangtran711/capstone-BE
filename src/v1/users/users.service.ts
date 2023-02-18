@@ -1,4 +1,5 @@
 import { ErrorMessage } from '@common/exception';
+import { RoleEnum } from '@common/interfaces';
 import { RolesGuard } from '@common/roles';
 import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -28,6 +29,12 @@ export class UsersService {
   async findByRole(role: string): Promise<User[]> {
     return await this.userModel.find({ role: role }).exec();
   }
+
+  async checkRoleUser(userId: string, role: RoleEnum): Promise<boolean> {
+    const user = await this.userModel.findById(userId);
+    return user.role === role;
+  }
+
   async findOneMultiple(filter: FilterQuery<UserDocument>): Promise<User> {
     return this.userModel.findOne(filter);
   }

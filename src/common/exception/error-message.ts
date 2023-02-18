@@ -42,4 +42,7 @@ export enum ErrorMessage {
 
   Student_AlreadyJoinedProject = 'Student already joined project',
   Student_DuplicatedSchedule = 'Student Duplicated Schedule',
+  Student_NotInTimeAttendance = 'Student attendance not in time',
+  Student_AlreadyAttendance = 'Already Attendanced',
+  Student_CannotFindSchedule = 'Cannot find Schedule',
 }

@@ -18,6 +18,7 @@ export class StudentSchedules {
       atHour: number;
       atMinute: number;
       atSecond: number;
+      attendaceAfter: number;
       leave: LeaveStatus;
     }[];
   }[];

@@ -6,6 +6,7 @@ import {
   StudentSchedules,
   StudentSchedulesSchema,
 } from '@schemas/student-schedule.schema';
+import { UsersModule } from 'v1/users/users.module';
 import { StudentController } from './student.controller';
 import { StudentService } from './student.service';
 
@@ -20,6 +21,7 @@ import { StudentService } from './student.service';
     MongooseModule.forFeature([
       { name: StudentSchedules.name, schema: StudentSchedulesSchema },
     ]),
+    UsersModule,
   ],
   controllers: [StudentController],
 })

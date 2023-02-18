@@ -1,4 +1,5 @@
 import { ErrorMessage } from '@common/exception';
+import { RoleEnum } from '@common/interfaces';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,7 +13,9 @@ import { TIME_IN_ONE_LESSON } from 'constants/lesson';
 
 import * as moment from 'moment';
 import { Model } from 'mongoose';
-import { RequestJoinProjectDto } from './dtos/student-request.dto';
+import { LeaveStatus } from 'shared/enums/leave.enum';
+import { UsersService } from 'v1/users/users.service';
+import { UpdateUserLeaveStatusDto } from './dtos/student-request.dto';
 
 @Injectable()
 export class StudentService {
@@ -23,12 +26,66 @@ export class StudentService {
     @InjectModel(StudentJoin.name)
     private studentJoinModel: Model<StudentJoinDocument>,
     @Inject(REQUEST) private request,
+    private userService: UsersService,
   ) {}
 
-  async joinProject(data: RequestJoinProjectDto) {
-    const { projectId } = data;
-    const foundProject = await this.projectModel.findById(projectId);
+  async currentUserGetAllSchedule() {
     const userId = this.request.user.id;
+    return await this.getAllSchedules(userId);
+  }
+
+  async getAllScheduleOfStudent(userId: string) {
+    return await this.getAllSchedules(userId);
+  }
+
+  async createUserJoinProject(projectId, userId) {
+    const isStudentUser = this.userService.checkRoleUser(
+      userId,
+      RoleEnum.EndUser,
+    );
+    if (!isStudentUser) {
+      throw new BadRequestException();
+    }
+    return await this.joinProject(projectId, userId);
+  }
+
+  async currentUserJoinProject(projectId: string) {
+    const userId = this.request.user.id;
+    return await this.joinProject(projectId, userId);
+  }
+
+  async currentUserAttendance(projectId) {
+    const userId = this.request.user.id;
+    return await this.attendance(userId, projectId);
+  }
+
+  async updateLeaveStatus(userId: string, body: UpdateUserLeaveStatusDto) {
+    const { projectId, indexOfTime, status } = body;
+    const foundSchedule = await this.studentSchedulesModel.findOne({
+      studentId: userId,
+    });
+    if (!foundSchedule) {
+      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+    }
+    const foundScheduleDetail = foundSchedule.schedules.find(
+      (schedule) => schedule.projectId === projectId,
+    );
+
+    if (!foundScheduleDetail) {
+      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+    }
+    foundScheduleDetail.times[indexOfTime].leave = status;
+    return await this.studentSchedulesModel.findOneAndUpdate(
+      {
+        studentId: userId,
+      },
+      foundSchedule,
+      { new: true },
+    );
+  }
+
+  private async joinProject(projectId: string, userId: string) {
+    const foundProject = await this.projectModel.findById(projectId);
     if (!foundProject) {
       throw new BadRequestException();
     }
@@ -37,6 +94,7 @@ export class StudentService {
     });
     if (foundRecordProject) {
       const studentJoined = [...foundRecordProject.studentsJoined];
+
       if (studentJoined.includes(userId)) {
         throw new BadRequestException(
           ErrorMessage.Student_AlreadyJoinedProject,
@@ -63,10 +121,14 @@ export class StudentService {
       const atMinute = foundProject.learnDate[i].atMinute;
       const atSecond = foundProject.learnDate[i].atSecond;
       const totalLesson = foundProject.totalLesson;
+      const attendaceAfter = foundProject.attendanceAfterMinute;
       const dates = [];
       let current = startDate.clone();
       while (current.day(7 + day).isBefore(endDate)) {
-        dates.push(current.clone().format());
+        const timeStart = `${atHour}:${atMinute}:${atSecond}`;
+        const dateLearn = current.clone().format('dddd, MMMM Do YYYY');
+        const date = `${dateLearn}, ${timeStart}`;
+        dates.push(date);
       }
       for (let i = 0; i < dates.length; i++) {
         scheduleTimes.push({
@@ -75,6 +137,7 @@ export class StudentService {
           atMinute,
           atSecond,
           totalLesson,
+          attendaceAfter,
         });
       }
     }
@@ -84,7 +147,7 @@ export class StudentService {
     if (!foundStudentSchedule) {
       const newStudentSchedule = new this.studentSchedulesModel({
         studentId: userId,
-        schedules: [{ projectId, time: scheduleTimes }],
+        schedules: [{ projectId, times: scheduleTimes }],
       });
       return await newStudentSchedule.save();
     } else {
@@ -124,7 +187,71 @@ export class StudentService {
       }
       oldSchedule.push({ projectId, times: scheduleTimes });
       foundStudentSchedule.schedules = oldSchedule;
+
       return await foundStudentSchedule.save();
     }
+  }
+
+  private async getAllSchedules(userId: string) {
+    return await this.studentSchedulesModel.find({ studentId: userId });
+  }
+
+  private async attendance(userId: string, projectId: string) {
+    const now = new Date();
+
+    const foundSchedule = await this.studentSchedulesModel.findOne({
+      studentId: userId,
+    });
+
+    if (!foundSchedule) {
+      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+    }
+    const indexScheduleProject = foundSchedule.schedules.findIndex(
+      (schedule) => schedule.projectId === projectId,
+    );
+
+    if (indexScheduleProject === -1) {
+      throw new BadRequestException(ErrorMessage.Student_NotInTimeAttendance);
+    }
+
+    const indexOfTimes = foundSchedule.schedules[
+      indexScheduleProject
+    ].times.findIndex((time) => {
+      return (
+        moment(now).diff(
+          moment(time.date, 'dddd, MMMM Do YYYY, h:m:s'),
+          'day',
+        ) === 0
+      );
+    });
+
+    if (indexOfTimes === -1) {
+      throw new BadRequestException(ErrorMessage.Student_NotInTimeAttendance);
+    }
+
+    const attendanceAfter =
+      foundSchedule.schedules[indexScheduleProject].times[indexOfTimes]
+        .attendaceAfter;
+
+    const timeAttendance =
+      moment(
+        foundSchedule.schedules[indexScheduleProject].times[indexOfTimes].date,
+        'dddd, MMMM Do YYYY, h:m:s',
+      ).unix() * 1000;
+    const timeFinishAttendance = timeAttendance + attendanceAfter * 60000;
+    const isAllowToAttendance =
+      now.getTime() >= timeAttendance && now.getTime() <= timeFinishAttendance;
+    if (!isAllowToAttendance) {
+      throw new BadRequestException(ErrorMessage.Student_NotInTimeAttendance);
+    }
+    foundSchedule.schedules[indexScheduleProject].times[indexOfTimes].leave =
+      LeaveStatus.JOINED;
+    return await this.studentSchedulesModel.findOneAndUpdate(
+      {
+        studentId: userId,
+      },
+      foundSchedule,
+      { new: true },
+    );
   }
 }
