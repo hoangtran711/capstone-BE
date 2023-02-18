@@ -14,6 +14,11 @@ export class ProjectsService {
     @Inject(REQUEST) private request,
   ) {}
 
+  async getUserCreatedOfProject(projectId: string) {
+    const project = await this.projectModel.findById(projectId);
+    return project.createdBy;
+  }
+
   async getProjectCurrentUser(): Promise<Project[]> {
     const userId = this.request.user.id;
     return await this.internalGetProjectByUserId(userId);
@@ -21,6 +26,24 @@ export class ProjectsService {
 
   async getAllProject(): Promise<Project[]> {
     return await this.projectModel.find();
+  }
+
+  async getProgressOfProjects(projectIds: string[]) {
+    const progresses = [];
+    for (const projectId of projectIds) {
+      const foundProject = await this.projectModel.findById(projectId);
+      const startDate = new Date(foundProject.startDate).getTime();
+      const endDate = new Date(foundProject.endDate).getTime();
+      const now = new Date().getTime();
+      if (now < startDate) {
+        progresses.push(0);
+      } else if (now < endDate) {
+        progresses.push((now - startDate) / (endDate - startDate));
+      } else {
+        progresses.push(100);
+      }
+    }
+    return progresses;
   }
 
   async createProject(projectDto: CreateProjectDto) {

@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { EnvironmentConfig } from 'config';
 import { AppModule } from './app.module';
+import { json, urlencoded } from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -10,7 +11,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: '/health', method: RequestMethod.ALL }],
   });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.use(json({ limit: '1mb' }));
+  app.use(urlencoded({ limit: '1mb', extended: true }));
 
   // config swagger
   const config = new DocumentBuilder()

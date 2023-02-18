@@ -1,4 +1,4 @@
-export enum Request {
+export enum RequestType {
   Leave = 'Leave',
 }
 export enum RequestStatus {

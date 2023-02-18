@@ -9,7 +9,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'v1/auth/jwt-auth.guard';
-import { CreateProjectDto } from './dtos/projects-request.dto';
+import {
+  CreateProjectDto,
+  RequestProgressProjects,
+} from './dtos/projects-request.dto';
 import { ProjectsService } from './projects.service';
 
 @Controller('projects')
@@ -42,6 +45,21 @@ export class ProjectsController {
   async getAllProject() {
     const project = await this.projectsService.getAllProject();
     return GenericResponse.success(project);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'GET Progress projects successfully',
+  })
+  @ApiOperation({ summary: 'GET Progress projects successfully' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
+  @Post('/progress')
+  async getProgressProjects(@Body() { projectIds }: RequestProgressProjects) {
+    const progresses = await this.projectsService.getProgressOfProjects(
+      projectIds,
+    );
+    return GenericResponse.success(progresses);
   }
 
   @ApiResponse({

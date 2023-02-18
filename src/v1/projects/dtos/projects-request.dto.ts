@@ -30,3 +30,7 @@ export class CreateProjectDto {
   @ApiProperty()
   public totalLesson: number;
 }
+
+export class RequestProgressProjects {
+  projectIds: string[];
+}

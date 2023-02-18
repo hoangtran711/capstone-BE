@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { RequestStatus } from 'shared/enums/request.enum';
+import { RequestStatus, RequestType } from 'shared/enums/request.enum';
 
 export type RequestDocument = Request & Document;
 
@@ -10,16 +10,25 @@ export class Request {
   projectId: string;
 
   @Prop({ required: true })
-  date: string;
+  userId: string;
 
   @Prop({ required: true })
+  date: string;
+
+  @Prop({})
   proof: string[];
 
   @Prop({ required: true })
-  reason: Request;
+  reason: string;
 
   @Prop({ required: true })
   status: RequestStatus;
+
+  @Prop({ required: true })
+  type: RequestType;
+
+  @Prop({ required: true })
+  approver: string;
 }
 
 export const RequestSchema = SchemaFactory.createForClass(Request);
