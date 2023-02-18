@@ -34,6 +34,74 @@ export class StudentService {
     return await this.getAllSchedules(userId);
   }
 
+  async getTodayAttendance() {
+    const userId = this.request.user.id;
+    const now = new Date();
+
+    const foundSchedule = await this.studentSchedulesModel.findOne({
+      studentId: userId,
+    });
+
+    if (!foundSchedule) {
+      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+    }
+    let response = [];
+    for (const schedule of foundSchedule.schedules) {
+      const indexOfTimes = schedule.times.findIndex((time) => {
+        const dateNow = moment(now);
+        const date = moment(time.date, 'dddd, MMMM Do YYYY, h:m:s');
+        return dateNow.isSame(date, 'date');
+      });
+      if (indexOfTimes !== -1) {
+        response.push({
+          projectId: schedule.projectId,
+          time: schedule.times[indexOfTimes],
+        });
+      }
+    }
+    return response;
+  }
+
+  async getCurrentAttendanceActive() {
+    const userId = this.request.user.id;
+    const now = new Date();
+
+    const foundSchedule = await this.studentSchedulesModel.findOne({
+      studentId: userId,
+    });
+
+    if (!foundSchedule) {
+      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+    }
+    let response = null;
+    for (const schedule of foundSchedule.schedules) {
+      const indexOfTimes = schedule.times.findIndex((time) => {
+        const dateNow = moment(now);
+        const date = moment(time.date, 'dddd, MMMM Do YYYY, h:m:s');
+        return dateNow.isSame(date, 'date');
+      });
+      if (indexOfTimes !== -1) {
+        const timeAttendance =
+          moment(
+            schedule.times[indexOfTimes].date,
+            'dddd, MMMM Do YYYY, h:m:s',
+          ).unix() * 1000;
+        const attendanceAfter = schedule.times[indexOfTimes].attendaceAfter;
+        const timeFinishAttendance = timeAttendance + attendanceAfter * 60000;
+        const isAllowToAttendance =
+          now.getTime() >= timeAttendance &&
+          now.getTime() <= timeFinishAttendance;
+        if (isAllowToAttendance) {
+          response = {
+            projectId: schedule.projectId,
+            time: schedule.times[indexOfTimes],
+          };
+        }
+      }
+    }
+    return response;
+  }
+
   async getAllScheduleOfStudent(userId: string) {
     return await this.getAllSchedules(userId);
   }
@@ -217,12 +285,9 @@ export class StudentService {
     const indexOfTimes = foundSchedule.schedules[
       indexScheduleProject
     ].times.findIndex((time) => {
-      return (
-        moment(now).diff(
-          moment(time.date, 'dddd, MMMM Do YYYY, h:m:s'),
-          'day',
-        ) === 0
-      );
+      const dateNow = moment(now);
+      const date = moment(time.date, 'dddd, MMMM Do YYYY, h:m:s');
+      return dateNow.isSame(date, 'date');
     });
 
     if (indexOfTimes === -1) {

@@ -39,6 +39,33 @@ export class StudentController {
 
   @ApiResponse({
     status: 201,
+    description: 'Get current active attendance of user successfully',
+  })
+  @ApiOperation({ summary: 'Get current active attenance of current user' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.EndUser)
+  @Get('/me/current-attendance')
+  async currentUserGetActiveAttendance() {
+    const activeAttendance =
+      await this.studentService.getCurrentAttendanceActive();
+    return GenericResponse.success(activeAttendance);
+  }
+
+  @ApiResponse({
+    status: 201,
+    description: 'Get today attendance of user successfully',
+  })
+  @ApiOperation({ summary: 'Get today attenance of current user' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.EndUser)
+  @Get('/me/current-attendance/today')
+  async currentUserGetTodayAttendance() {
+    const todayAttendance = await this.studentService.getTodayAttendance();
+    return GenericResponse.success(todayAttendance);
+  }
+
+  @ApiResponse({
+    status: 201,
     description: 'Get schedule of user successfully',
   })
   @ApiOperation({ summary: 'Current User get all schedule' })
