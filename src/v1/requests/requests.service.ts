@@ -33,6 +33,10 @@ export class RequestsService {
     const userId = this.request.user.id;
     return await this.requestModel.find({ approver: userId });
   }
+  async getRequestRequesterCurrentUser() {
+    const userId = this.request.user.id;
+    return await this.requestModel.find({ userId });
+  }
 
   async updateStatusRequest({ status, requestId }: UpdateRequestDto) {
     const foundRequest = await this.requestModel.findById(requestId);

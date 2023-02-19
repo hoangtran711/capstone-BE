@@ -8,6 +8,8 @@ import {
   Get,
   Param,
   Post,
+  Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -57,6 +59,37 @@ export class StudentController {
     const activeAttendance =
       await this.studentService.getCurrentAttendanceActive();
     return GenericResponse.success(activeAttendance);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Get history attendance of user successfully',
+  })
+  @ApiOperation({ summary: 'Get current active attenance of current user' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.EndUser)
+  @Get('/me/history')
+  async historyCurrentUser(@Req() req) {
+    const userId = req.user.id;
+    const history = await this.studentService.getStudentHistoryAttendance(
+      userId,
+    );
+    return GenericResponse.success(history);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Get history attendance of user successfully',
+  })
+  @ApiOperation({ summary: 'Get attendance of user' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin)
+  @Get('/:userId/history')
+  async historyOfUser(@Query('userId') userId: string) {
+    const history = await this.studentService.getStudentHistoryAttendance(
+      userId,
+    );
+    return GenericResponse.success(history);
   }
 
   @ApiResponse({

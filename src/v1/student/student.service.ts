@@ -39,6 +39,38 @@ export class StudentService {
     return response;
   }
 
+  async getStudentHistoryAttendance(userId: string) {
+    const foundStudent = await this.studentSchedulesModel.findOne({
+      studentId: userId,
+    });
+    if (!foundStudent) {
+      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+    }
+    const attendaceBefore = [];
+    const now = new Date();
+    for (const schedule of foundStudent.schedules) {
+      const times = schedule.times;
+      const timesBefore = [];
+      for (const time of times) {
+        const momentDate = moment(time.date, 'dddd, MMMM Do YYYY, h:m:s').add(
+          time.attendaceAfter,
+          'minutes',
+        );
+        const momentNow = moment(now);
+        if (momentDate.isBefore(momentNow)) {
+          timesBefore.push(time);
+        }
+      }
+      if (timesBefore.length !== 0) {
+        attendaceBefore.push({
+          projectId: schedule.projectId,
+          times: timesBefore,
+        });
+      }
+    }
+    return attendaceBefore;
+  }
+
   async deleteUserFromProject(projectId: string, userId: string) {
     const foundStudent = await this.studentSchedulesModel.findOne({
       studentId: userId,
