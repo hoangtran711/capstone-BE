@@ -8,6 +8,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -18,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CreateUserDTO } from 'shared';
+import { CreateUserDTO, UpdateUserDTO } from 'shared';
 import { JwtAuthGuard } from 'v1/auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 
@@ -139,6 +140,20 @@ export class UsersController {
       address,
       role,
     );
+    return GenericResponse.success(user);
+  }
+
+  @ApiResponse({
+    status: 201,
+    description: 'User has been updated',
+  })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user' })
+  @ApiBody({ type: UpdateUserDTO })
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
+  @Put('/me')
+  async update(@Body() payload: UpdateUserDTO) {
+    const user = await this.usersService.updateUser(payload);
     return GenericResponse.success(user);
   }
 }
