@@ -222,6 +222,14 @@ export class StudentService {
       const attendaceAfter = foundProject.attendanceAfterMinute;
       const dates = [];
       let current = startDate.clone();
+      let current2 = startDate.clone();
+
+      if (current2.day() <= day) {
+        const timeStart = `${atHour}:${atMinute}:${atSecond}`;
+        const dateLearn = current2.clone().format('dddd, MMMM Do YYYY');
+        const date = `${dateLearn}, ${timeStart}`;
+        dates.push(date);
+      }
       while (current.day(7 + day).isBefore(endDate)) {
         const timeStart = `${atHour}:${atMinute}:${atSecond}`;
         const dateLearn = current.clone().format('dddd, MMMM Do YYYY');
