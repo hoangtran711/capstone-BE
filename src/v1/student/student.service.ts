@@ -336,10 +336,16 @@ export class StudentService {
 
   private async attendance(userId: string, projectId: string) {
     const now = new Date();
-
+    const foundProject = await this.projectModel.findById(projectId);
     const foundSchedule = await this.studentSchedulesModel.findOne({
       studentId: userId,
     });
+
+    if (foundProject.joined + 1 > foundProject.maxJoin) {
+      {
+        throw new BadRequestException(ErrorMessage.Project_Full);
+      }
+    }
 
     if (!foundSchedule) {
       throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
@@ -379,6 +385,7 @@ export class StudentService {
     if (!isAllowToAttendance) {
       throw new BadRequestException(ErrorMessage.Student_NotInTimeAttendance);
     }
+    foundProject.joined = foundProject.joined + 1;
     foundSchedule.schedules[indexScheduleProject].times[indexOfTimes].leave =
       LeaveStatus.JOINED;
     return await this.studentSchedulesModel.findOneAndUpdate(

@@ -39,6 +39,7 @@ export enum ErrorMessage {
 
   Project_AlreadyCreated = 'Project with this name already created',
   Project_NotFound = 'Project Not Found',
+  Project_Full = "Can't enroll because the class is already full",
 
   Student_AlreadyJoinedProject = 'Student already joined project',
   Student_DuplicatedSchedule = 'Student Duplicated Schedule',
