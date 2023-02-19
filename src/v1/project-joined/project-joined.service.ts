@@ -13,6 +13,13 @@ export class ProjectJoinedService {
     private projectJoinedModel: Model<StudentJoinDocument>,
     @Inject(REQUEST) private request,
   ) {}
+  async checkIfUserJoinedProject(projectId: string, userId: string) {
+    const foundProject = await this.projectJoinedModel.findOne({ projectId });
+    if (!foundProject) {
+      return false;
+    }
+    return foundProject.studentsJoined.includes(userId);
+  }
 
   async getStudentJoinedProject(projectId: string) {
     const projectJoined = await this.projectJoinedModel.findOne({ projectId });

@@ -16,6 +16,9 @@ export class Task {
     comment: string;
   }[];
 
+  @Prop()
+  files: string[];
+
   @Prop({ required: true })
   title: string;
 
@@ -27,6 +30,9 @@ export class Task {
 
   @Prop({ required: true })
   endTime: string;
+
+  @Prop({ required: true })
+  createdBy: string;
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);

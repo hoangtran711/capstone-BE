@@ -46,4 +46,7 @@ export enum ErrorMessage {
   Student_NotInTimeAttendance = 'Student attendance not in time',
   Student_AlreadyAttendance = 'Already Attendanced',
   Student_CannotFindSchedule = 'Cannot find Schedule',
+
+  Task_NotFound = 'Cannot Find Task',
+  Task_AlreadySubmitted = 'Task already submitted',
 }
