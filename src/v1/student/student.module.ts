@@ -12,7 +12,7 @@ import { StudentService } from './student.service';
 
 @Module({
   providers: [StudentService],
-  exports: [],
+  exports: [StudentService],
   imports: [
     MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
     MongooseModule.forFeature([

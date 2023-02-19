@@ -34,6 +34,36 @@ export class StudentService {
     return await this.getAllSchedules(userId);
   }
 
+  async createJoinProjectForUserId(projectId: string, userId: string) {
+    const response = await this.joinProject(projectId, userId);
+    return response;
+  }
+
+  async deleteUserFromProject(projectId: string, userId: string) {
+    const foundStudent = await this.studentSchedulesModel.findOne({
+      studentId: userId,
+    });
+
+    if (!foundStudent) {
+      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+    }
+
+    const schedules = [...foundStudent.schedules];
+    const schedulesFiltered = schedules.filter(
+      (schedule) => schedule.projectId !== projectId,
+    );
+    const foundStudentJoin = await this.studentJoinModel.findOne({ projectId });
+    if (foundStudentJoin) {
+      const studentJoin = [...foundStudentJoin.studentsJoined];
+      const indexOfStudent = studentJoin.indexOf(userId);
+      studentJoin.splice(indexOfStudent, 1);
+      foundStudentJoin.studentsJoined = studentJoin;
+      await foundStudentJoin.save();
+    }
+    foundStudent.schedules = schedulesFiltered;
+    return await foundStudent.save();
+  }
+
   async getTodayAttendance() {
     const userId = this.request.user.id;
     const now = new Date();
@@ -71,7 +101,7 @@ export class StudentService {
     });
 
     if (!foundSchedule) {
-      throw new BadRequestException(ErrorMessage.Student_CannotFindSchedule);
+      return null;
     }
     let response = null;
     for (const schedule of foundSchedule.schedules) {

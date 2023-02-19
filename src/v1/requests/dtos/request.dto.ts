@@ -1,15 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { RequestStatus, RequestType } from 'shared/enums/request.enum';
 
 export class CreateRequestDto {
   @ApiProperty()
   @IsString()
+  @IsOptional()
   projectId: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  reason: string;
+  reason?: string;
 
   @ApiProperty({ type: 'string', format: 'binary' })
   @IsOptional()
@@ -20,8 +22,8 @@ export class CreateRequestDto {
   type: RequestType;
 
   @ApiProperty()
-  @IsDateString()
-  date: string;
+  @IsOptional()
+  date?: string;
 }
 
 export class UpdateRequestDto {

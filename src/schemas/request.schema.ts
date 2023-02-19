@@ -12,14 +12,14 @@ export class Request {
   @Prop({ required: true })
   userId: string;
 
-  @Prop({ required: true })
-  date: string;
+  @Prop()
+  date?: string;
 
   @Prop({})
-  proof: string[];
+  proof?: string[];
 
-  @Prop({ required: true })
-  reason: string;
+  @Prop()
+  reason?: string;
 
   @Prop({ required: true })
   status: RequestStatus;

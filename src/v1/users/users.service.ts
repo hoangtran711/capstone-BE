@@ -61,7 +61,6 @@ export class UsersService {
     address?: string,
     role?: string,
   ): Promise<User> {
-    const saltRounds = 10;
     const uid = uuid();
     const existing = await this.userModel
       .findOne({ $or: [{ email: email }, { username: username }] })

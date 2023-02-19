@@ -3,14 +3,16 @@ import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Request, RequestDocument } from '@schemas/request.schema';
 import { Model } from 'mongoose';
-import { RequestStatus } from 'shared/enums/request.enum';
+import { RequestStatus, RequestType } from 'shared/enums/request.enum';
 import { ProjectsService } from 'v1/projects/projects.service';
+import { StudentService } from 'v1/student/student.service';
 import { CreateRequestDto, UpdateRequestDto } from './dtos/request.dto';
 
 @Injectable()
 export class RequestsService {
   constructor(
     private projectsService: ProjectsService,
+    private studentService: StudentService,
     @InjectModel(Request.name) private requestModel: Model<RequestDocument>,
     @Inject(REQUEST) private request,
   ) {}
@@ -34,6 +36,15 @@ export class RequestsService {
 
   async updateStatusRequest({ status, requestId }: UpdateRequestDto) {
     const foundRequest = await this.requestModel.findById(requestId);
+    if (
+      foundRequest.type === RequestType.Join_Project &&
+      status === RequestStatus.Accepted
+    ) {
+      await this.studentService.createJoinProjectForUserId(
+        foundRequest.projectId,
+        foundRequest.userId,
+      );
+    }
     foundRequest.status = status;
     return await foundRequest.save();
   }
@@ -49,19 +60,15 @@ export class RequestsService {
     const approver = await this.projectsService.getUserCreatedOfProject(
       projectId,
     );
-
-    const userId = this.request.user.id;
-    const request = new this.requestModel({
-      userId,
+    const request = await this.createRequestLocal(
       projectId,
       reason,
       date,
       type,
       approver,
-      proof: proofPath,
-      status: RequestStatus.Pending,
-    });
-    return request.save();
+      proofPath,
+    );
+    return request;
   }
 
   private convertFileToImagePath(files) {
@@ -71,5 +78,27 @@ export class RequestsService {
       path.push(baseUrl + file.filename);
     }
     return path;
+  }
+
+  private async createRequestLocal(
+    projectId,
+    reason,
+    date,
+    type,
+    approver,
+    proof,
+  ) {
+    const userId = this.request.user.id;
+    const request = new this.requestModel({
+      userId,
+      projectId,
+      reason,
+      date,
+      type,
+      approver,
+      proof,
+      status: RequestStatus.Pending,
+    });
+    return await request.save();
   }
 }

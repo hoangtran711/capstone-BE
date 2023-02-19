@@ -1,7 +1,15 @@
 import { RoleEnum } from '@common/interfaces';
 import GenericResponse from '@common/msg/generic-response';
 import { Roles, RolesGuard } from '@common/roles';
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -106,7 +114,27 @@ export class StudentController {
     @Param('userId') userId: string,
     @Body() { projectId }: RequestJoinProjectDto,
   ) {
-    const user = await this.studentService.createUserJoinProject(
+    const response = await this.studentService.createUserJoinProject(
+      projectId,
+      userId,
+    );
+    return GenericResponse.success(response);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Delete user from project successfully',
+  })
+  @ApiBody({ type: RequestJoinProjectDto })
+  @ApiOperation({ summary: 'Create Student in Project' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin)
+  @Delete('/:userId/delete-user-project')
+  async deteleUserFromProject(
+    @Param('userId') userId: string,
+    @Body() { projectId }: RequestJoinProjectDto,
+  ) {
+    const user = await this.studentService.deleteUserFromProject(
       projectId,
       userId,
     );

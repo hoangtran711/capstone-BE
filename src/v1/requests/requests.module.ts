@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import { Request, RequestSchema } from '@schemas/request.schema';
 import { ProjectsModule } from 'v1/projects/projects.module';
+import { StudentModule } from 'v1/student/student.module';
 import { RequestsController } from './requests.controller';
 import { RequestsService } from './requests.service';
 
@@ -14,6 +15,7 @@ import { RequestsService } from './requests.service';
     MulterModule.register({
       dest: './uploads',
     }),
+    StudentModule,
     ProjectsModule,
   ],
   controllers: [RequestsController],
