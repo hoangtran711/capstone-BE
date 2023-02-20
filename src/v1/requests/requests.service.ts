@@ -1,3 +1,4 @@
+import { RoleEnum } from '@common/interfaces';
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
@@ -6,6 +7,7 @@ import { Model } from 'mongoose';
 import { RequestStatus, RequestType } from 'shared/enums/request.enum';
 import { ProjectsService } from 'v1/projects/projects.service';
 import { StudentService } from 'v1/student/student.service';
+import { UsersService } from 'v1/users/users.service';
 import { CreateRequestDto, UpdateRequestDto } from './dtos/request.dto';
 
 @Injectable()
@@ -13,6 +15,7 @@ export class RequestsService {
   constructor(
     private projectsService: ProjectsService,
     private studentService: StudentService,
+    private usersService: UsersService,
     @InjectModel(Request.name) private requestModel: Model<RequestDocument>,
     @Inject(REQUEST) private request,
   ) {}
@@ -31,7 +34,21 @@ export class RequestsService {
 
   async getAllRequestedCurrentUser() {
     const userId = this.request.user.id;
-    return await this.requestModel.find({ approver: userId });
+    const role = this.request.user.role;
+    let requests;
+    if (role === RoleEnum.Admin) {
+      requests = await this.requestModel.find({ approver: userId }).lean();
+    } else {
+      requests = await this.requestModel.find({ userId }).lean();
+    }
+    const requestsInfo = [];
+    for (const request of requests) {
+      const userInfo = await this.usersService.findOne(request.userId);
+      const approverInfo = await this.usersService.findOne(request.userId);
+      const projectInfo = await this.projectsService.findOne(request.projectId);
+      requestsInfo.push({ ...request, userInfo, approverInfo, projectInfo });
+    }
+    return requestsInfo;
   }
   async getRequestRequesterCurrentUser() {
     const userId = this.request.user.id;

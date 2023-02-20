@@ -54,7 +54,7 @@ export class RequestsController {
   })
   @ApiOperation({ summary: 'GET All requests of system' })
   @ApiBearerAuth()
-  @Roles(RoleEnum.Admin)
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
   @Get('/me')
   async getAllCurrentUser() {
     const requests = await this.requestService.getAllRequestedCurrentUser();

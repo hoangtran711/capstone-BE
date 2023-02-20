@@ -128,6 +128,9 @@ export class UsersController {
       address,
       dateOfBirth,
       role,
+      studentId,
+      avatar,
+      major,
     } = payload;
     const user = await this.usersService.createUser(
       username,
@@ -139,6 +142,9 @@ export class UsersController {
       phoneNumber,
       address,
       role,
+      studentId,
+      avatar,
+      major,
     );
     return GenericResponse.success(user);
   }

@@ -55,6 +55,20 @@ export class CreateUserDTO {
   @IsString()
   @IsEnum(RoleEnum)
   readonly role: RoleEnum;
+
+  @ApiProperty({ type: 'string', format: 'binary' })
+  @IsOptional()
+  avatar?: Express.Multer.File;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  readonly studentId: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  readonly major: string;
 }
 export class RegisterUserDTO extends OmitType(CreateUserDTO, [
   'role',

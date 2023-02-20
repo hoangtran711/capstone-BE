@@ -39,6 +39,9 @@ export class User {
   @Prop({ required: true })
   role: RoleEnum;
 
+  @Prop()
+  major?: string;
+
   @Prop({ required: true })
   emailVerified: boolean;
 }

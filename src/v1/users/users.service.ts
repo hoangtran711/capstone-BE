@@ -13,7 +13,6 @@ import { User, UserDocument } from '@schemas/user.schema';
 import { hash, genSalt } from 'bcrypt';
 import { FilterQuery, Model } from 'mongoose';
 import { UpdateUserDTO } from 'shared';
-import { v4 as uuid } from 'uuid';
 import { JwtAuthGuard } from 'v1/auth/jwt-auth.guard';
 
 @Injectable()
@@ -60,8 +59,11 @@ export class UsersService {
     phoneNumber?: string,
     address?: string,
     role?: string,
+    studentId?: string,
+    avatar?: Express.Multer.File,
+    major?: string,
   ): Promise<User> {
-    const uid = uuid();
+    const avatarPath = this.convertFileToImagePath(avatar);
     const existing = await this.userModel
       .findOne({ $or: [{ email: email }, { username: username }] })
       .exec();
@@ -81,8 +83,10 @@ export class UsersService {
       dateOfBirth,
       phoneNumber,
       address,
-      uid,
+      uid: studentId,
+      major,
       role,
+      avatar: avatarPath,
       password: hashPassword,
       emailVerified: false,
     }).save();
@@ -132,5 +136,11 @@ export class UsersService {
     const salt = await genSalt(saltRounds);
     const hashPassword = await hash(password, salt);
     return hashPassword;
+  }
+
+  private convertFileToImagePath(file) {
+    const baseUrl = 'http://localhost:3001/api/v1/uploads/';
+    const path = baseUrl + file.filename;
+    return path;
   }
 }

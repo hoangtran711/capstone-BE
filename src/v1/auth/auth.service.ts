@@ -25,6 +25,9 @@ export class AuthService {
       phoneNumber,
       email,
       address,
+      avatar,
+      studentId,
+      major,
     } = user;
     const foundUser = await this.usersService.findOneMultiple({
       $or: [{ email: email }, { username: username }],
@@ -42,6 +45,9 @@ export class AuthService {
       phoneNumber,
       address,
       RoleEnum.EndUser,
+      studentId,
+      avatar,
+      major,
     );
 
     return newUser;
@@ -58,7 +64,7 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(payload);
-    return [token, user.role];
+    return [token, user.role, user];
   }
   async validateUser(username: string, pass: string): Promise<User> {
     const user = await this.usersService.findByUsernameOrEmail(username);

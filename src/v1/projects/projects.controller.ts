@@ -1,7 +1,7 @@
 import { RoleEnum } from '@common/interfaces';
 import GenericResponse from '@common/msg/generic-response';
 import { Roles, RolesGuard } from '@common/roles';
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -31,6 +31,32 @@ export class ProjectsController {
   @Get('/me')
   async getProjectCurrentUser() {
     const project = await this.projectsService.getProjectCurrentUser();
+    return GenericResponse.success(project);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Get Projects student joined successfully',
+  })
+  @ApiOperation({ summary: 'Get projects student joine of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.EndUser)
+  @Get('/student/me')
+  async getProjectStudentJoined() {
+    const project = await this.projectsService.getProjectsJoinedOfStudent();
+    return GenericResponse.success(project);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Get Projects student joined successfully',
+  })
+  @ApiOperation({ summary: 'Get projects student joine of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.EndUser, RoleEnum.Admin)
+  @Get('/detail/:projectId')
+  async getProjectDetail(@Param('projectId') projectId: string) {
+    const project = await this.projectsService.getProjectDetail(projectId);
     return GenericResponse.success(project);
   }
 

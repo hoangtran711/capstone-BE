@@ -6,17 +6,59 @@ import { MAX_DAY_LEARN_IN_WEEK, MIN_DAY_LEARN_IN_WEEK } from 'config';
 import { Model } from 'mongoose';
 import { Project, ProjectDocument } from 'schemas';
 import { CreateProjectDto } from './dtos/projects-request.dto';
+import { ProjectJoinedService } from '../project-joined/project-joined.service';
+import { UsersService } from 'v1/users/users.service';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
+    private usersService: UsersService,
+    private projectJoinedService: ProjectJoinedService,
     @Inject(REQUEST) private request,
   ) {}
 
   async getUserCreatedOfProject(projectId: string) {
     const project = await this.projectModel.findById(projectId);
     return project.createdBy;
+  }
+
+  async getProjectDetail(projectId: string) {
+    const userId = this.request.user.id;
+    const project = await this.projectModel.findById(projectId).lean();
+    const isJoined = await this.projectJoinedService.checkIfUserJoinedProject(
+      project._id,
+      userId,
+    );
+    const studentJoined =
+      await this.projectJoinedService.getStudentJoinedProject(projectId);
+    const students = [];
+    for (const student of studentJoined) {
+      const studentData = await this.usersService.findOne(student);
+      students.push(studentData);
+    }
+    const approverInfo = await this.usersService.findOne(project.createdBy);
+    return { ...project, isJoined, studentsInfo: students, approverInfo };
+  }
+
+  async findOne(projectId: string) {
+    return await this.projectModel.findById(projectId);
+  }
+
+  async getProjectsJoinedOfStudent() {
+    const userId = this.request.user.id;
+    const projects = await this.projectModel.find();
+    const projectJoined = [];
+    for (const project of projects) {
+      const isJoined = await this.projectJoinedService.checkIfUserJoinedProject(
+        project._id,
+        userId,
+      );
+      if (isJoined) {
+        projectJoined.push(project);
+      }
+    }
+    return projectJoined;
   }
 
   async getProjectCurrentUser(): Promise<Project[]> {
@@ -94,6 +136,6 @@ export class ProjectsService {
     return await newProject.save();
   }
   private async internalGetProjectByUserId(userId: string): Promise<Project[]> {
-    return await this.projectModel.find({ userId });
+    return await this.projectModel.find({ createdBy: userId });
   }
 }
