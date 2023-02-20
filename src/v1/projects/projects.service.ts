@@ -26,6 +26,7 @@ export class ProjectsService {
   async getProjectDetail(projectId: string) {
     const userId = this.request.user.id;
     const project = await this.projectModel.findById(projectId).lean();
+    console.log(project);
     const isJoined = await this.projectJoinedService.checkIfUserJoinedProject(
       project._id,
       userId,
