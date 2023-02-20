@@ -242,6 +242,8 @@ export class StudentService {
     }
 
     let scheduleTimes = [];
+    foundProject.joined = foundProject.joined + 1;
+    await foundProject.save();
 
     const startDate = moment(foundProject.startDate);
     const endDate = moment(foundProject.endDate);
@@ -385,7 +387,6 @@ export class StudentService {
     if (!isAllowToAttendance) {
       throw new BadRequestException(ErrorMessage.Student_NotInTimeAttendance);
     }
-    foundProject.joined = foundProject.joined + 1;
     foundSchedule.schedules[indexScheduleProject].times[indexOfTimes].leave =
       LeaveStatus.JOINED;
     return await this.studentSchedulesModel.findOneAndUpdate(
