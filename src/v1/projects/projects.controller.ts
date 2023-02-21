@@ -62,6 +62,19 @@ export class ProjectsController {
 
   @ApiResponse({
     status: 200,
+    description: 'Get Projects attendance joined successfully',
+  })
+  @ApiOperation({ summary: 'Get projects attendance joine of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin)
+  @Get('/attendance/:projectId')
+  async getProjectAttendance(@Param('projectId') projectId: string) {
+    const project = await this.projectsService.getProjectsAttendance(projectId);
+    return GenericResponse.success(project);
+  }
+
+  @ApiResponse({
+    status: 200,
     description: 'Get Projects successfully',
   })
   @ApiOperation({ summary: 'Get project of system' })

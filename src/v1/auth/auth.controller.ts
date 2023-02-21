@@ -53,7 +53,6 @@ export class AuthController {
     @UploadedFiles()
     avatar: Express.Multer.File[],
   ) {
-    console.log(avatar);
     if (avatar) {
       user.avatar = avatar[0];
     }

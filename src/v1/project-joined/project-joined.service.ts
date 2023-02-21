@@ -22,7 +22,9 @@ export class ProjectJoinedService {
   }
 
   async getStudentJoinedProject(projectId: string) {
-    const projectJoined = await this.projectJoinedModel.findOne({ projectId });
+    const projectJoined = await this.projectJoinedModel
+      .findOne({ projectId })
+      .lean();
     const students = projectJoined.studentsJoined;
     const allUsers: any = await this.usersService.getAll();
     const studentsInfo = allUsers.filter((user) => students.includes(user.id));

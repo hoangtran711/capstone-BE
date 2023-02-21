@@ -121,7 +121,6 @@ export class RequestsController {
     @UploadedFiles()
     files: Express.Multer.File[],
   ) {
-    console.log(files);
     if (files) {
       this.verifyUploadFilesSize(files);
       createDto.proof = files;

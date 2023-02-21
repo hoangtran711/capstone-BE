@@ -336,6 +336,18 @@ export class StudentService {
     return await this.studentSchedulesModel.find({ studentId: userId });
   }
 
+  async getShedulesByProjectId(projectId: string, userId: string) {
+    const studentSchedule = await this.studentSchedulesModel.findOne({
+      userId,
+    });
+
+    const scheduleProject = studentSchedule.schedules.find(
+      (schedule) => schedule.projectId === projectId,
+    );
+    console.log(studentSchedule.schedules[0].projectId, projectId.toString());
+    return scheduleProject;
+  }
+
   private async attendance(userId: string, projectId: string) {
     const now = new Date();
     const foundSchedule = await this.studentSchedulesModel.findOne({

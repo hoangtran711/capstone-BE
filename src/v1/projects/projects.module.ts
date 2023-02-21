@@ -5,6 +5,7 @@ import { Project, ProjectSchema } from 'schemas';
 import { ProjectsController } from './projects.controller';
 import { ProjectJoinedModule } from 'v1/project-joined/project-joined.module';
 import { UsersModule } from 'v1/users/users.module';
+import { StudentModule } from 'v1/student/student.module';
 
 @Module({
   providers: [ProjectsService],
@@ -13,6 +14,7 @@ import { UsersModule } from 'v1/users/users.module';
     MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
     ProjectJoinedModule,
     UsersModule,
+    StudentModule,
   ],
   controllers: [ProjectsController],
 })

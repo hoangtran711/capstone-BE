@@ -8,6 +8,8 @@ import { Project, ProjectDocument } from 'schemas';
 import { CreateProjectDto } from './dtos/projects-request.dto';
 import { ProjectJoinedService } from '../project-joined/project-joined.service';
 import { UsersService } from 'v1/users/users.service';
+import { StudentService } from 'v1/student/student.service';
+import * as moment from 'moment';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProjectsService {
@@ -15,6 +17,7 @@ export class ProjectsService {
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
     private usersService: UsersService,
     private projectJoinedService: ProjectJoinedService,
+    private studentServices: StudentService,
     @Inject(REQUEST) private request,
   ) {}
 
@@ -26,7 +29,6 @@ export class ProjectsService {
   async getProjectDetail(projectId: string) {
     const userId = this.request.user.id;
     const project = await this.projectModel.findById(projectId).lean();
-    console.log(project);
     const isJoined = await this.projectJoinedService.checkIfUserJoinedProject(
       project._id,
       userId,
@@ -40,6 +42,39 @@ export class ProjectsService {
     }
     const approverInfo = await this.usersService.findOne(project.createdBy);
     return { ...project, isJoined, studentsInfo: students, approverInfo };
+  }
+
+  async getProjectsAttendance(projectId: string) {
+    const now = new Date();
+    const students = await this.projectJoinedService.getStudentJoinedProject(
+      projectId,
+    );
+    const projectAttendance = [];
+    for (const student of students) {
+      const schedules = await this.studentServices.getShedulesByProjectId(
+        projectId,
+        student._id,
+      );
+
+      const filteredTime = schedules.times.filter((time) =>
+        moment(time.date, 'dddd, MMMM Do YYYY, h:m:s').isSameOrBefore(
+          moment(now),
+        ),
+      );
+
+      projectAttendance.push({
+        firstName: student.firstName,
+        lastName: student.lastName,
+        email: student.email,
+        avatar: student.avatar,
+        role: student.role,
+        major: student.major,
+        projectId,
+        timesUntilNow: filteredTime,
+        schedules,
+      });
+    }
+    return projectAttendance;
   }
 
   async findOne(projectId: string) {
