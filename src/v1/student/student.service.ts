@@ -9,11 +9,14 @@ import {
   StudentSchedules,
   StudentSchedulesDocument,
 } from '@schemas/student-schedule.schema';
+import { LIMIT_DISTANCE_IN_KM } from 'constants/geolocation';
 import { TIME_IN_ONE_LESSON } from 'constants/lesson';
 
 import * as moment from 'moment';
 import { Model } from 'mongoose';
 import { LeaveStatus } from 'shared/enums/leave.enum';
+import { decryptData } from 'utils/crypto.util';
+import { getDistanceFromLatLonInKm } from 'utils/distance.util';
 import { UsersService } from 'v1/users/users.service';
 import { UpdateUserLeaveStatusDto } from './dtos/student-request.dto';
 
@@ -184,8 +187,20 @@ export class StudentService {
     return await this.joinProject(projectId, userId);
   }
 
-  async currentUserAttendance(projectId) {
+  async currentUserAttendance(projectId: string, geoLocation: string) {
     const userId = this.request.user.id;
+    const geoLocationDecrypted = JSON.parse(decryptData(geoLocation));
+    const distance = getDistanceFromLatLonInKm(
+      geoLocationDecrypted.latitude,
+      geoLocationDecrypted.longitude,
+    );
+    console.log(distance);
+    if (distance > LIMIT_DISTANCE_IN_KM) {
+      throw new BadRequestException(
+        'Your location cannot attendance, Please come to nearly class to attendace',
+      );
+    }
+
     return await this.attendance(userId, projectId);
   }
 
@@ -350,6 +365,7 @@ export class StudentService {
 
   private async attendance(userId: string, projectId: string) {
     const now = new Date();
+
     const foundSchedule = await this.studentSchedulesModel.findOne({
       studentId: userId,
     });
