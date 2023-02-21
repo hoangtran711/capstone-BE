@@ -27,7 +27,7 @@ export class ProjectsController {
   })
   @ApiOperation({ summary: 'Get project of system' })
   @ApiBearerAuth()
-  @Roles(RoleEnum.Admin)
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
   @Get('/me')
   async getProjectCurrentUser() {
     const project = await this.projectsService.getProjectCurrentUser();

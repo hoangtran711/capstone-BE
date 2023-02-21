@@ -342,7 +342,7 @@ export class StudentService {
     });
 
     const scheduleProject = studentSchedule.schedules.find(
-      (schedule) => schedule.projectId === projectId,
+      (schedule) => schedule.projectId === projectId.toString(),
     );
     console.log(studentSchedule.schedules[0].projectId, projectId.toString());
     return scheduleProject;

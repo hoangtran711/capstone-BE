@@ -18,14 +18,14 @@ export class ProjectJoinedService {
     if (!foundProject) {
       return false;
     }
-    return foundProject.studentsJoined.includes(userId);
+    return foundProject.studentsJoined?.includes(userId);
   }
 
   async getStudentJoinedProject(projectId: string) {
     const projectJoined = await this.projectJoinedModel
       .findOne({ projectId })
       .lean();
-    const students = projectJoined.studentsJoined;
+    const students = projectJoined?.studentsJoined || [];
     const allUsers: any = await this.usersService.getAll();
     const studentsInfo = allUsers.filter((user) => students.includes(user.id));
     return studentsInfo;

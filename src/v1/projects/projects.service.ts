@@ -10,6 +10,7 @@ import { ProjectJoinedService } from '../project-joined/project-joined.service';
 import { UsersService } from 'v1/users/users.service';
 import { StudentService } from 'v1/student/student.service';
 import * as moment from 'moment';
+import { RoleEnum } from '@common/interfaces';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProjectsService {
@@ -30,7 +31,7 @@ export class ProjectsService {
     const userId = this.request.user.id;
     const project = await this.projectModel.findById(projectId).lean();
     const isJoined = await this.projectJoinedService.checkIfUserJoinedProject(
-      project._id,
+      project._id.toString(),
       userId,
     );
     const studentJoined =
@@ -83,15 +84,17 @@ export class ProjectsService {
 
   async getProjectsJoinedOfStudent() {
     const userId = this.request.user.id;
-    const projects = await this.projectModel.find();
+    const projects = await this.projectModel.find().lean();
     const projectJoined = [];
     for (const project of projects) {
+      const approverInfo = await this.usersService.findOne(project.createdBy);
+      const process = await this.getProgressOfProject(project._id);
       const isJoined = await this.projectJoinedService.checkIfUserJoinedProject(
         project._id,
         userId,
       );
       if (isJoined) {
-        projectJoined.push(project);
+        projectJoined.push({ ...project, approverInfo, process });
       }
     }
     return projectJoined;
@@ -99,11 +102,25 @@ export class ProjectsService {
 
   async getProjectCurrentUser(): Promise<Project[]> {
     const userId = this.request.user.id;
-    return await this.internalGetProjectByUserId(userId);
+    const role = this.request.user.role;
+    if (role === RoleEnum.Admin) {
+      return await this.internalGetProjectByUserId(userId);
+    } else {
+      return await this.getProjectsJoinedOfStudent();
+    }
   }
 
   async getAllProject(): Promise<Project[]> {
-    return await this.projectModel.find();
+    const projects = await this.projectModel.find().lean();
+    const projectsInfo = [];
+    for (const project of projects) {
+      const process = await this.getProgressOfProject(project._id);
+      const studentJoined =
+        await this.projectJoinedService.getStudentJoinedProject(project._id);
+      const approverInfo = await this.usersService.findOne(project.createdBy);
+      projectsInfo.push({ ...project, studentJoined, approverInfo, process });
+    }
+    return projectsInfo;
   }
 
   async getProgressOfProjects(projectIds: string[]) {
@@ -172,6 +189,31 @@ export class ProjectsService {
     return await newProject.save();
   }
   private async internalGetProjectByUserId(userId: string): Promise<Project[]> {
-    return await this.projectModel.find({ createdBy: userId });
+    const approverInfo = await this.usersService.findOne(userId);
+    const projects = await this.projectModel.find({ createdBy: userId }).lean();
+    const projectsInfo = [];
+    for (const project of projects) {
+      const studentJoined =
+        await this.projectJoinedService.getStudentJoinedProject(
+          project._id.toString(),
+        );
+      const process = await this.getProgressOfProject(project._id);
+      projectsInfo.push({ ...project, studentJoined, approverInfo, process });
+    }
+
+    return projectsInfo;
+  }
+  async getProgressOfProject(projectId: string) {
+    const foundProject = await this.projectModel.findById(projectId);
+    const startDate = new Date(foundProject.startDate).getTime();
+    const endDate = new Date(foundProject.endDate).getTime();
+    const now = new Date().getTime();
+    if (now < startDate) {
+      return 0;
+    } else if (now < endDate) {
+      return ((now - startDate) / (endDate - startDate)) * 100;
+    } else {
+      return 100;
+    }
   }
 }
