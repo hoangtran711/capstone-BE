@@ -70,9 +70,7 @@ export class CreateUserDTO {
   @IsString()
   readonly major: string;
 }
-export class RegisterUserDTO extends OmitType(CreateUserDTO, [
-  'role',
-] as const) {}
+export class RegisterUserDTO extends OmitType(CreateUserDTO, [] as const) {}
 
 export class UpdateUserDTO extends OmitType(CreateUserDTO, ['role'] as const) {
   userId: string;

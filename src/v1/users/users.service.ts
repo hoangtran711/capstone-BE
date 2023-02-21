@@ -13,6 +13,7 @@ import { User, UserDocument } from '@schemas/user.schema';
 import { hash, genSalt } from 'bcrypt';
 import { FilterQuery, Model } from 'mongoose';
 import { UpdateUserDTO } from 'shared';
+import { VerifyStatus } from 'shared/enums/user.enum';
 import { JwtAuthGuard } from 'v1/auth/jwt-auth.guard';
 
 @Injectable()
@@ -22,6 +23,16 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(REQUEST) private request,
   ) {}
+
+  async verifyEmail(email: string, verifyStatus: VerifyStatus): Promise<User> {
+    const user = await this.userModel.findOne({ email });
+    user.emailVerified = verifyStatus;
+    return await user.save();
+  }
+
+  async getByEmal(email: string): Promise<User> {
+    return await this.userModel.findOne({ email: email });
+  }
 
   async getAll(): Promise<User[]> {
     return await this.userModel.find();

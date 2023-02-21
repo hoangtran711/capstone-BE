@@ -1,8 +1,9 @@
 import { RoleEnum } from '@common/interfaces';
+import { VerifyStatus } from 'shared/enums/user.enum';
 
 export interface User {
   email?: string;
-  emailVerified?: boolean;
+  emailVerified?: VerifyStatus;
   password?: string;
   username?: string;
   avatar?: string;

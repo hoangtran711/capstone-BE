@@ -7,6 +7,7 @@ import { RequestsModule } from './requests/requests.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { ProjectJoinedModule } from './project-joined/project-joined.module';
 import { TasksModule } from './tasks/tasks.module';
+import { EmailConfirmationModule } from './email-confirmation/email-confirmation.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TasksModule } from './tasks/tasks.module';
     UploadsModule,
     ProjectJoinedModule,
     TasksModule,
+    EmailConfirmationModule,
   ],
   controllers: [],
   providers: [],

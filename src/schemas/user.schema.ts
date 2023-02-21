@@ -1,6 +1,7 @@
 import { RoleEnum } from '@common/interfaces';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { VerifyStatus } from 'shared/enums/user.enum';
 
 export type UserDocument = User & Document;
 
@@ -43,7 +44,7 @@ export class User {
   major?: string;
 
   @Prop({ required: true })
-  emailVerified: boolean;
+  emailVerified: VerifyStatus;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
