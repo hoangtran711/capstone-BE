@@ -5,6 +5,7 @@ import { HealthModule } from 'health/health.module';
 import { join } from 'path';
 import { V1Module } from 'v1/v1.module';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         },
       },
     }),
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(process.env.DB_CONNECTION_URL),
     V1Module,
     HealthModule,

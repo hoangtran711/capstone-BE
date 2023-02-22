@@ -26,10 +26,10 @@ export class TasksService {
     const taskInprogress = tasks.filter((task) =>
       moment(now).isBetween(moment(task.startTime), moment(task.endTime)),
     );
-    const taskPending = tasks.filter((task) =>
+    const taskCompleted = tasks.filter((task) =>
       moment(now).isAfter(task.endTime),
     );
-    const taskCompleted = tasks.filter((task) =>
+    const taskPending = tasks.filter((task) =>
       moment(now).isBefore(task.startTime),
     );
     return {

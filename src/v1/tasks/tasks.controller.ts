@@ -180,6 +180,7 @@ export class TasksController {
     @UploadedFiles()
     files: Express.Multer.File[],
   ) {
+    console.log(files);
     if (files) {
       this.verifyUploadFilesSize(files);
       submitDto.files = files;

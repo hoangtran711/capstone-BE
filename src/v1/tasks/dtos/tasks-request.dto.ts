@@ -25,9 +25,11 @@ export class CreateTaskDto {
 export class SubmitTaskDto {
   @IsString()
   taskId: string;
+
   @ApiProperty({ type: 'string', format: 'binary' })
   @IsOptional()
   files?: Express.Multer.File[];
+
   @IsString()
   comment: string;
 }
