@@ -8,6 +8,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { ProjectJoinedModule } from './project-joined/project-joined.module';
 import { TasksModule } from './tasks/tasks.module';
 import { EmailConfirmationModule } from './email-confirmation/email-confirmation.module';
+import { DisabledUserModule } from './disabled-user/disabled-user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EmailConfirmationModule } from './email-confirmation/email-confirmation
     ProjectJoinedModule,
     TasksModule,
     EmailConfirmationModule,
+    DisabledUserModule,
   ],
   controllers: [],
   providers: [],
