@@ -99,7 +99,7 @@ export class UsersService {
       role,
       avatar: avatarPath,
       password: hashPassword,
-      emailVerified: false,
+      emailVerified: VerifyStatus.NONE,
     }).save();
 
     return newUser;
