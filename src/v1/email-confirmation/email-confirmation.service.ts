@@ -25,13 +25,13 @@ export class EmailConfirmationService {
     }
     const payload = {
       email: user.email,
-      username: 'trannbhoang',
+      username: process.env.ADMIN_USERNAME,
       role: user.role,
       id: user._id,
     };
     const token = this.jwtService.sign(payload);
     await this.mailService.sendMail({
-      to: 'trannbhoang@kms-technology.com',
+      to: process.env.ADMIN_EMAIL,
       from: 'tranhoang.finizz@gmail.com',
       subject: '1 Request with role Teacher',
       template: 'email',
