@@ -11,6 +11,7 @@ import { DisabledUserService } from './disabled-user.service';
 @Module({
   controllers: [DisabledUserController],
   providers: [DisabledUserService],
+  exports: [DisabledUserService],
   imports: [
     MongooseModule.forFeature([
       { name: StudentDisabled.name, schema: StudentDisabledSchema },

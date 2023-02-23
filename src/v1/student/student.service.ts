@@ -17,6 +17,7 @@ import { Model } from 'mongoose';
 import { LeaveStatus } from 'shared/enums/leave.enum';
 import { decryptData } from 'utils/crypto.util';
 import { getDistanceFromLatLonInKm } from 'utils/distance.util';
+import { DisabledUserService } from 'v1/disabled-user/disabled-user.service';
 import { UsersService } from 'v1/users/users.service';
 import { UpdateUserLeaveStatusDto } from './dtos/student-request.dto';
 
@@ -30,6 +31,7 @@ export class StudentService {
     private studentJoinModel: Model<StudentJoinDocument>,
     @Inject(REQUEST) private request,
     private userService: UsersService,
+    private disabledUserService: DisabledUserService,
   ) {}
 
   async currentUserGetAllSchedule() {
@@ -365,6 +367,15 @@ export class StudentService {
 
   private async attendance(userId: string, projectId: string) {
     const now = new Date();
+    const isDisabled = this.disabledUserService.checkIfUserDisabled(
+      projectId,
+      userId,
+    );
+    if (isDisabled) {
+      throw new BadRequestException(
+        'User is disabled from project ' + projectId,
+      );
+    }
 
     const foundSchedule = await this.studentSchedulesModel.findOne({
       studentId: userId,

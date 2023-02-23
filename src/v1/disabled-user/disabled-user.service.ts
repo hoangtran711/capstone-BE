@@ -32,6 +32,18 @@ export class DisabledUserService {
     return studentFormated;
   }
 
+  async checkIfUserDisabled(projectId: string, userId: string) {
+    const foundProject = await this.disabledModel.findOne({ projectId });
+    if (foundProject) {
+      const studentsDisabled = [...foundProject.studentsDisabled];
+      const foundStudent = studentsDisabled.find(
+        (studentId) => studentId === userId,
+      );
+      return !!foundStudent;
+    }
+    return false;
+  }
+
   async removeStudentDisabled(projectId: string, userId: string) {
     const foundProject = await this.disabledModel.findOne({ projectId });
     if (!foundProject) {
