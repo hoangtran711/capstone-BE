@@ -274,8 +274,8 @@ export class StudentService {
       const dates = [];
       let current = startDate.clone();
       let current2 = startDate.clone();
-
-      if (current2.day() <= day) {
+      console.log(current2.day(), day);
+      if (current2.day() !== 0 && current2.day() < day) {
         const timeStart = `${atHour}:${atMinute}:${atSecond}`;
         const dateLearn = current2.clone().format('dddd, MMMM Do YYYY');
         const date = `${dateLearn}, ${timeStart}`;
