@@ -6,6 +6,7 @@ import {
   StudentSchedules,
   StudentSchedulesSchema,
 } from '@schemas/student-schedule.schema';
+import { DisabledUserModule } from 'v1/disabled-user/disabled-user.module';
 import { UsersModule } from 'v1/users/users.module';
 import { StudentController } from './student.controller';
 import { StudentService } from './student.service';
@@ -22,6 +23,7 @@ import { StudentService } from './student.service';
       { name: StudentSchedules.name, schema: StudentSchedulesSchema },
     ]),
     UsersModule,
+    DisabledUserModule,
   ],
   controllers: [StudentController],
 })
