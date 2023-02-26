@@ -274,14 +274,14 @@ export class StudentService {
       const dates = [];
       let current = startDate.clone();
       let current2 = startDate.clone();
-      console.log(current2.day(), day);
-      if (current2.day() !== 0 && current2.day() < day) {
+      if (current2.day() === day) {
         const timeStart = `${atHour}:${atMinute}:${atSecond}`;
         const dateLearn = current2.clone().format('dddd, MMMM Do YYYY');
         const date = `${dateLearn}, ${timeStart}`;
         dates.push(date);
       }
       while (current.day(7 + day).isBefore(endDate)) {
+        console.log(current);
         const timeStart = `${atHour}:${atMinute}:${atSecond}`;
         const dateLearn = current.clone().format('dddd, MMMM Do YYYY');
         const date = `${dateLearn}, ${timeStart}`;
