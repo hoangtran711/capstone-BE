@@ -273,7 +273,7 @@ export class StudentService {
       const dates = [];
       let current = startDate.clone();
       let current2 = startDate.clone();
-      if (current2.day(day).isBefore(moment()) && day !== moment().day()) {
+      if (current2.day(day).isBefore(moment())) {
         const timeStart = `${atHour}:${atMinute}:${atSecond}`;
         const dateLearn = current2.clone().format('dddd, MMMM Do YYYY');
         console.log(dateLearn);
@@ -366,7 +366,7 @@ export class StudentService {
 
   private async attendance(userId: string, projectId: string) {
     const now = new Date();
-    const isDisabled = this.disabledUserService.checkIfUserDisabled(
+    const isDisabled = await this.disabledUserService.checkIfUserDisabled(
       projectId,
       userId,
     );

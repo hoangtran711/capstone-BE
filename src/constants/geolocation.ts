@@ -1,4 +1,5 @@
-export const LONGTITUDE = 106.78348;
-export const LATTITUDE = 10.884076;
+export const LONGTITUDE = 106.83704;
+export const LATTITUDE = 10.847299;
+//10.847299, 106.837040
 
 export const LIMIT_DISTANCE_IN_KM = 0.15;
