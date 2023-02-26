@@ -26,7 +26,6 @@ export class EmailConfirmationController {
     const email = await this.emailConfirmationService.decodeConfirmationToken(
       token,
     );
-    console.log(email);
     await this.emailConfirmationService.confirmEmail(email);
     return res.redirect('http://localhost:3000/sign-in');
   }

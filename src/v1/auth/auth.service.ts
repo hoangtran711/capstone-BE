@@ -60,9 +60,6 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(payload);
-    console.log(
-      `http://localhost:3001/api/v1/email-confirmation/confirm?token=${token}`,
-    );
     await this.mailService.sendMail({
       to: email,
       from: 'tranhoang.finizz@gmail.com',
@@ -95,9 +92,6 @@ export class AuthService {
     };
     const token = this.jwtService.sign(payload);
     if (user.emailVerified === VerifyStatus.NONE) {
-      console.log(
-        `http://localhost:3001/api/v1/email-confirmation/confirm?token=${token}`,
-      );
       await this.mailService.sendMail({
         to: user.email,
         from: 'tranhoang.finizz@gmail.com',

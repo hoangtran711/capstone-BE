@@ -55,7 +55,6 @@ export class EmailConfirmationService {
 
   async adminConfirm(email: string) {
     const user = await this.usersService.getByEmal(email);
-    console.log(user);
     await this.mailService.sendMail({
       to: user.email,
       from: 'tranhoang.finizz@gmail.com',

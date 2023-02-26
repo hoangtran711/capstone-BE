@@ -196,7 +196,6 @@ export class StudentService {
       geoLocationDecrypted.latitude,
       geoLocationDecrypted.longitude,
     );
-    console.log(distance);
     if (distance > LIMIT_DISTANCE_IN_KM) {
       throw new BadRequestException(
         'Your location cannot attendance, Please come to nearly class to attendace',
@@ -274,22 +273,23 @@ export class StudentService {
       const dates = [];
       let current = startDate.clone();
       let current2 = startDate.clone();
-      if (current2.day() === day) {
+      if (current2.day(day).isBefore(moment()) && day !== moment().day()) {
         const timeStart = `${atHour}:${atMinute}:${atSecond}`;
         const dateLearn = current2.clone().format('dddd, MMMM Do YYYY');
+        console.log(dateLearn);
         const date = `${dateLearn}, ${timeStart}`;
         dates.push(date);
       }
       while (current.day(7 + day).isBefore(endDate)) {
-        console.log(current);
         const timeStart = `${atHour}:${atMinute}:${atSecond}`;
         const dateLearn = current.clone().format('dddd, MMMM Do YYYY');
         const date = `${dateLearn}, ${timeStart}`;
         dates.push(date);
       }
-      for (let i = 0; i < dates.length; i++) {
+
+      for (let j = 0; j < dates.length; j++) {
         scheduleTimes.push({
-          date: dates[i],
+          date: dates[j],
           atHour,
           atMinute,
           atSecond,
@@ -361,7 +361,6 @@ export class StudentService {
     const scheduleProject = studentSchedule.schedules.find(
       (schedule) => schedule.projectId === projectId.toString(),
     );
-    console.log(studentSchedule.schedules[0].projectId, projectId.toString());
     return scheduleProject;
   }
 
