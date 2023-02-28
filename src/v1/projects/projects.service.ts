@@ -12,6 +12,7 @@ import { StudentService } from 'v1/student/student.service';
 import * as moment from 'moment';
 import { RoleEnum } from '@common/interfaces';
 import { getDates } from 'utils/date.util';
+import { v4 as uuid } from 'uuid';
 import {
   ProjectSchedule,
   ProjectScheduleDocument,
@@ -184,16 +185,19 @@ export class ProjectsService {
       const atSecond = date.getSeconds();
       learnDateFormated.push({ dayOfWeek, atHour, atMinute, atSecond });
       let times = [...getDates(startDate, endDate, dayOfWeek)];
-      console.log(learnDate[i].location);
+
       for (const time of times) {
         schedules.push(
           new this.scheduleModel({
             location: learnDate[i].location,
-            time,
+            startTime: time,
+            endTime: moment(time).add(totalLesson, 'hours'),
             attendanceAt: [
               {
+                _id: uuid(),
                 start: moment(time),
                 end: moment(time).add(attendanceAfterMinute, 'minutes'),
+                studentJoined: [],
               },
             ],
           }),

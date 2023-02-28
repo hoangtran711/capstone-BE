@@ -7,10 +7,18 @@ export type ScheduleDocument = Schedule & Document;
 @Schema()
 export class Schedule {
   @Prop({ required: true })
-  time: string;
+  startTime: string;
 
   @Prop({ required: true })
-  attendanceAt: string[];
+  endTime: string;
+
+  @Prop({ required: true, type: [{ _id: String, start: String, end: String }] })
+  attendanceAt: {
+    _id: string;
+    start: string;
+    end: string;
+    studentJoined: string[];
+  }[];
 
   @Prop({ type: { lat: Number, lng: Number } })
   location: { lat: number; lng: number };
