@@ -45,6 +45,9 @@ export class ProjectsService {
       project._id.toString(),
       userId,
     );
+    const schedules = await this.projectScheduleModel
+      .findOne({ projectId })
+      .lean();
     const studentJoined =
       await this.projectJoinedService.getStudentJoinedProject(projectId);
     const students = [];
@@ -57,36 +60,7 @@ export class ProjectsService {
   }
 
   async getProjectsAttendance(projectId: string) {
-    const now = new Date();
-    const students = await this.projectJoinedService.getStudentJoinedProject(
-      projectId,
-    );
-    const projectAttendance = [];
-    for (const student of students) {
-      const schedules = await this.studentServices.getShedulesByProjectId(
-        projectId,
-        student._id,
-      );
-
-      const filteredTime = schedules.times.filter((time) =>
-        moment(time.date, 'dddd, MMMM Do YYYY, h:m:s').isSameOrBefore(
-          moment(now),
-        ),
-      );
-
-      projectAttendance.push({
-        firstName: student.firstName,
-        lastName: student.lastName,
-        email: student.email,
-        avatar: student.avatar,
-        role: student.role,
-        major: student.major,
-        projectId,
-        timesUntilNow: filteredTime,
-        schedules,
-      });
-    }
-    return projectAttendance;
+    return await this.studentServices.getShedulesByProjectId(projectId);
   }
 
   async findOne(projectId: string) {

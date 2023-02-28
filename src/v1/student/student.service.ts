@@ -8,9 +8,12 @@ import {
 } from '@schemas/project-schedule.schema';
 import { Project, ProjectDocument } from '@schemas/project.schema';
 import { StudentJoin, StudentJoinDocument } from '@schemas/student-join.schema';
+import { LIMIT_DISTANCE_IN_KM } from 'constants/geolocation';
 
 import * as moment from 'moment';
 import { Model } from 'mongoose';
+import { decryptData } from 'utils/crypto.util';
+import { getDistanceFromLatLonInKm } from 'utils/distance.util';
 import { DisabledUserService } from 'v1/disabled-user/disabled-user.service';
 import { UsersService } from 'v1/users/users.service';
 import { UpdateUserLeaveStatusDto } from './dtos/student-request.dto';
@@ -70,14 +73,28 @@ export class StudentService {
     const history = [];
     for (const project of projectUserJoined) {
       const projectId = project.projectId;
-      const projectSchedule = await this.projectScheduleModel.findOne({
-        projectId,
-      });
+      const projectSchedule = await this.projectScheduleModel
+        .findOne({
+          projectId,
+        })
+        .lean();
       const schedules = projectSchedule.schedules;
-      const schedulesUntilNow = schedules.filter((schedule) => {
-        const startTime = new Date(schedule.startTime);
-        return moment().isAfter(startTime);
-      });
+      // const schedulesUntilNow = schedules.filter((schedule) => {
+      //   const startTime = new Date(schedule.startTime);
+      //   return moment().isAfter(startTime);
+      // });
+      const schedulesUntilNow = [];
+      for (const schedule of schedules) {
+        let isJoined = true;
+        for (const attendance of schedule.attendanceAt) {
+          if (!attendance.studentJoined.includes(userId)) {
+            isJoined = false;
+          }
+        }
+        if (moment().isAfter(new Date(schedule.startTime))) {
+          schedulesUntilNow.push({ ...schedule, isJoined });
+        }
+      }
       if (schedulesUntilNow.length !== 0) {
         history.push({ ...project, schedules: schedulesUntilNow });
       }
@@ -86,7 +103,22 @@ export class StudentService {
   }
 
   async deleteUserFromProject(projectId: string, userId: string) {
-    return [];
+    const foundProjectJoined = await this.studentJoinModel.findOne({
+      projectId,
+    });
+    if (!foundProjectJoined) {
+      throw new BadRequestException('Not found project');
+    }
+    const studentJoined = [...foundProjectJoined.studentsJoined];
+    const index = studentJoined.indexOf(userId);
+    if (index === -1) {
+      throw new BadRequestException('Student not join project');
+    }
+
+    studentJoined.splice(index, 1);
+    foundProjectJoined.studentsJoined = studentJoined;
+
+    return await foundProjectJoined.save();
   }
 
   async getCurrentAttendanceActive() {
@@ -126,25 +158,29 @@ export class StudentService {
       throw new BadRequestException('Not found schedule');
     }
     const schedules = foundProjectSchedule.schedules;
-    // const geoLocationDecrypted = JSON.parse(decryptData(geoLocation));
-    let attendance = null;
-    for (const schedule of schedules) {
-      schedule.attendanceAt.map((at, index) => {
-        const isAttendance = at._id === attendanceId;
-        if (isAttendance) {
-          attendance = at;
-        }
-      });
+
+    const schedule = schedules.find((schedule) => {
+      return schedule.attendanceAt.find(
+        (attendance) => attendance._id === attendanceId,
+      );
+    });
+    if (!schedule) {
+      throw new BadRequestException('Cannot find schedule');
     }
-    // const distance = getDistanceFromLatLonInKm(
-    //   geoLocationDecrypted.latitude,
-    //   geoLocationDecrypted.longitude,
-    // );
-    // if (distance > LIMIT_DISTANCE_IN_KM) {
-    //   throw new BadRequestException(
-    //     'Your location cannot attendance, Please come to nearly class to attendace',
-    //   );
-    // }
+
+    const geoLocationDecrypted = JSON.parse(decryptData(geoLocation));
+    const distance = getDistanceFromLatLonInKm(
+      schedule.location.lat,
+      schedule.location.lng,
+      geoLocationDecrypted.latitude,
+      geoLocationDecrypted.longitude,
+    );
+    console.log(distance);
+    if (distance > LIMIT_DISTANCE_IN_KM) {
+      throw new BadRequestException(
+        'Your location cannot attendance, Please come to nearly class to attendace',
+      );
+    }
 
     return await this.attendance(attendanceId, projectId, userId);
   }
@@ -179,8 +215,42 @@ export class StudentService {
     return [];
   }
 
-  async getShedulesByProjectId(projectId: string, userId: string) {
-    return null;
+  async getShedulesByProjectId(projectId: string) {
+    const foundSchedules = await this.projectScheduleModel
+      .findOne({
+        projectId,
+      })
+      .lean();
+    if (!foundSchedules) {
+      return [];
+    }
+    const projectAttendance = [];
+
+    const students = await (
+      await this.studentJoinModel.findOne({ projectId })
+    ).studentsJoined;
+    for (const student of students) {
+      const userInfo = await this.userService.findOne(student);
+      const schedulesUntilNow = [];
+      for (const schedule of foundSchedules.schedules) {
+        let isJoined = true;
+        for (const attendance of schedule.attendanceAt) {
+          if (!attendance.studentJoined.includes(student)) {
+            isJoined = false;
+          }
+        }
+        if (moment().isSameOrAfter(moment(schedule.startTime))) {
+          schedulesUntilNow.push({ ...schedule, isJoined });
+        }
+      }
+      projectAttendance.push({
+        ...userInfo,
+        schedules: foundSchedules.schedules,
+        timesUntilNow: schedulesUntilNow,
+      });
+    }
+
+    return projectAttendance;
   }
 
   private async attendance(
@@ -209,6 +279,12 @@ export class StudentService {
         if (attendance._id === attendanceId) {
           const startTime = new Date(attendance.start);
           const endTime = new Date(attendance.end);
+          if (!moment().isBetween(startTime, endTime)) {
+            throw new BadRequestException('Cannot attendance this time');
+          }
+          if (attendance.studentJoined.includes(userId)) {
+            throw new BadRequestException('Student attendanced');
+          }
           attendance.studentJoined.push(userId);
         }
       }
