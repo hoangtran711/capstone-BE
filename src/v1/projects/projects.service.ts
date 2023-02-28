@@ -94,6 +94,41 @@ export class ProjectsService {
       return await this.getProjectsJoinedOfStudent();
     }
   }
+  async reGenerateAttendance(projectId: string) {
+    let isGenerated = false;
+    const foundSchedule = await this.projectScheduleModel.findOne({
+      projectId,
+    });
+    if (!foundSchedule) {
+      throw new BadRequestException('Not found project');
+    }
+    for (const schedule of foundSchedule.schedules) {
+      const isBetween = moment().isBetween(
+        new Date(schedule.startTime),
+        new Date(schedule.endTime),
+      );
+
+      if (isBetween) {
+        isGenerated = true;
+        schedule.attendanceAt.push({
+          _id: uuid(),
+          start: moment().toString(),
+          end: moment()
+            .add(process.env.LIMIT_SECONDS_ATTENDANCE, 'second')
+            .toString(),
+          studentJoined: [],
+        });
+      }
+    }
+    if (!isGenerated) {
+      throw new BadRequestException('Cannot find schedule at this time');
+    }
+    return await this.projectScheduleModel.findOneAndUpdate(
+      { projectId },
+      foundSchedule,
+      { new: true },
+    );
+  }
 
   async getAllProject(): Promise<Project[]> {
     const projects = await this.projectModel.find().lean();

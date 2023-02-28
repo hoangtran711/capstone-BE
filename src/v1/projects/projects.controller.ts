@@ -113,4 +113,17 @@ export class ProjectsController {
     const project = await this.projectsService.createProject(projectDto);
     return GenericResponse.success(project);
   }
+
+  @ApiResponse({
+    status: 201,
+    description: 'Re-generate attendance successfully',
+  })
+  @ApiOperation({ summary: 'Regenerate attendance of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin)
+  @Post('/re-generate-attendance/:projectId')
+  async generateAttendance(@Param('projectId') projectId: string) {
+    const response = await this.projectsService.reGenerateAttendance(projectId);
+    return GenericResponse.success(response);
+  }
 }

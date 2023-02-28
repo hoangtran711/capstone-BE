@@ -73,6 +73,7 @@ export class StudentService {
     const history = [];
     for (const project of projectUserJoined) {
       const projectId = project.projectId;
+      const projectInfo = await this.projectModel.findById(projectId).lean();
       const projectSchedule = await this.projectScheduleModel
         .findOne({
           projectId,
@@ -96,7 +97,7 @@ export class StudentService {
         }
       }
       if (schedulesUntilNow.length !== 0) {
-        history.push({ ...project, schedules: schedulesUntilNow });
+        history.push({ ...projectInfo, schedules: schedulesUntilNow });
       }
     }
     return history;
