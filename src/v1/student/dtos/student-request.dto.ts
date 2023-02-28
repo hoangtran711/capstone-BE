@@ -11,6 +11,10 @@ export class RequestAttendaceDto extends RequestJoinProjectDto {
   @ApiProperty()
   @IsString()
   geoLocation: string;
+
+  @ApiProperty()
+  @IsString()
+  attendanceId: string;
 }
 
 export class UpdateUserLeaveStatusDto {

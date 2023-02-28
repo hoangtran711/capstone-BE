@@ -184,7 +184,19 @@ export class ProjectsService {
       const atMinute = date.getMinutes();
       const atSecond = date.getSeconds();
       learnDateFormated.push({ dayOfWeek, atHour, atMinute, atSecond });
-      let times = [...getDates(startDate, endDate, dayOfWeek)];
+      let times = [
+        ...getDates(
+          moment(startDate)
+            .set('hours', atHour)
+            .set('minutes', atMinute)
+            .set('second', atSecond),
+          moment(endDate)
+            .set('hours', atHour)
+            .set('minutes', atMinute)
+            .set('second', atSecond),
+          dayOfWeek,
+        ),
+      ];
 
       for (const time of times) {
         schedules.push(

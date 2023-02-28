@@ -9,12 +9,8 @@ import {
 import { Project, ProjectDocument } from '@schemas/project.schema';
 import { StudentJoin, StudentJoinDocument } from '@schemas/student-join.schema';
 
-import { LIMIT_DISTANCE_IN_KM } from 'constants/geolocation';
-
 import * as moment from 'moment';
 import { Model } from 'mongoose';
-import { decryptData } from 'utils/crypto.util';
-import { getDistanceFromLatLonInKm } from 'utils/distance.util';
 import { DisabledUserService } from 'v1/disabled-user/disabled-user.service';
 import { UsersService } from 'v1/users/users.service';
 import { UpdateUserLeaveStatusDto } from './dtos/student-request.dto';
@@ -117,20 +113,40 @@ export class StudentService {
     return await this.joinProject(projectId, userId);
   }
 
-  async currentUserAttendance(projectId: string, geoLocation: string) {
+  async currentUserAttendance(
+    projectId: string,
+    attendanceId: string,
+    geoLocation: string,
+  ) {
     const userId = this.request.user.id;
-    const geoLocationDecrypted = JSON.parse(decryptData(geoLocation));
-    const distance = getDistanceFromLatLonInKm(
-      geoLocationDecrypted.latitude,
-      geoLocationDecrypted.longitude,
-    );
-    if (distance > LIMIT_DISTANCE_IN_KM) {
-      throw new BadRequestException(
-        'Your location cannot attendance, Please come to nearly class to attendace',
-      );
+    const foundProjectSchedule = await this.projectScheduleModel.findOne({
+      projectId,
+    });
+    if (!foundProjectSchedule) {
+      throw new BadRequestException('Not found schedule');
     }
+    const schedules = foundProjectSchedule.schedules;
+    // const geoLocationDecrypted = JSON.parse(decryptData(geoLocation));
+    let attendance = null;
+    for (const schedule of schedules) {
+      schedule.attendanceAt.map((at, index) => {
+        const isAttendance = at._id === attendanceId;
+        if (isAttendance) {
+          attendance = at;
+        }
+      });
+    }
+    // const distance = getDistanceFromLatLonInKm(
+    //   geoLocationDecrypted.latitude,
+    //   geoLocationDecrypted.longitude,
+    // );
+    // if (distance > LIMIT_DISTANCE_IN_KM) {
+    //   throw new BadRequestException(
+    //     'Your location cannot attendance, Please come to nearly class to attendace',
+    //   );
+    // }
 
-    return [];
+    return await this.attendance(attendanceId, projectId, userId);
   }
 
   async updateLeaveStatus(userId: string, body: UpdateUserLeaveStatusDto) {
@@ -189,18 +205,19 @@ export class StudentService {
     }
     const schedules = [...foundProjectSchedule.schedules];
     for (const schedule of schedules) {
-      const foundAttendance = schedule.attendanceAt.find(
-        (attendance) => attendance._id === attendanceId,
-      );
-      if (foundAttendance) {
-        const index = schedule.attendanceAt.indexOf(foundAttendance);
-
-        const startTime = new Date(foundAttendance.start);
-        const endTime = new Date(foundAttendance.end);
-        if (moment().isBetween(startTime, endTime)) {
-          foundAttendance.studentJoined.push(userId);
+      for (const attendance of schedule.attendanceAt) {
+        if (attendance._id === attendanceId) {
+          const startTime = new Date(attendance.start);
+          const endTime = new Date(attendance.end);
+          attendance.studentJoined.push(userId);
         }
       }
     }
+    foundProjectSchedule.schedules = schedules;
+    return await this.projectScheduleModel.findByIdAndUpdate(
+      foundProjectSchedule._id,
+      foundProjectSchedule,
+      { new: true },
+    );
   }
 }

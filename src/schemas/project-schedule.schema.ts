@@ -12,7 +12,17 @@ export class Schedule {
   @Prop({ required: true })
   endTime: string;
 
-  @Prop({ required: true, type: [{ _id: String, start: String, end: String }] })
+  @Prop({
+    required: true,
+    type: [
+      {
+        _id: String,
+        start: String,
+        end: String,
+        studentJoined: [{ type: String }],
+      },
+    ],
+  })
   attendanceAt: {
     _id: string;
     start: string;
@@ -29,7 +39,7 @@ export class ProjectSchedule {
   projectId: string;
 
   @Prop({ required: true })
-  schedules: [Schedule];
+  schedules: Schedule[];
 }
 
 export const ProjectScheduleSchema =

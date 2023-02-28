@@ -183,9 +183,12 @@ export class StudentController {
   @ApiBearerAuth()
   @Roles(RoleEnum.EndUser)
   @Post('/me/attendance')
-  async attendance(@Body() { projectId, geoLocation }: RequestAttendaceDto) {
+  async attendance(
+    @Body() { projectId, geoLocation, attendanceId }: RequestAttendaceDto,
+  ) {
     const userSchedule = await this.studentService.currentUserAttendance(
       projectId,
+      attendanceId,
       geoLocation,
     );
     return GenericResponse.success(userSchedule);

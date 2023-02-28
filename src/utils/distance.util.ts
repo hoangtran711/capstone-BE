@@ -1,8 +1,4 @@
-import { LATTITUDE, LONGTITUDE } from 'constants/geolocation';
-
-export function getDistanceFromLatLonInKm(lat2, lon2) {
-  const lat1 = LATTITUDE;
-  const lon1 = LONGTITUDE;
+export function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   let R = 6371; // Radius of the earth in km
   let dLat = deg2rad(lat2 - lat1); // deg2rad below
   let dLon = deg2rad(lon2 - lon1);
