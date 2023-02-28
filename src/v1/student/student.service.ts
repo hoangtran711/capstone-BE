@@ -226,10 +226,11 @@ export class StudentService {
       return [];
     }
     const projectAttendance = [];
-
-    const students = await (
-      await this.studentJoinModel.findOne({ projectId })
-    ).studentsJoined;
+    const studentJoin = await this.studentJoinModel.findOne({ projectId });
+    if (!studentJoin) {
+      return projectAttendance;
+    }
+    const students = studentJoin.studentsJoined;
     for (const student of students) {
       const userInfo = await this.userService.findOne(student);
       const schedulesUntilNow = [];

@@ -88,6 +88,19 @@ export class ProjectsController {
 
   @ApiResponse({
     status: 200,
+    description: 'Get Projects Active successfully',
+  })
+  @ApiOperation({ summary: 'Get Projects Active of system' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.Admin, RoleEnum.EndUser)
+  @Get('/active')
+  async getAllProjectsActive() {
+    const project = await this.projectsService.getCurrentActiveProject();
+    return GenericResponse.success(project);
+  }
+
+  @ApiResponse({
+    status: 200,
     description: 'GET Progress projects successfully',
   })
   @ApiOperation({ summary: 'GET Progress projects successfully' })

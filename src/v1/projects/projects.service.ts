@@ -38,6 +38,30 @@ export class ProjectsService {
     return project.createdBy;
   }
 
+  async getCurrentActiveProject() {
+    const userId = this.request.user.id;
+    const projectSchedules = await this.projectScheduleModel.find();
+    const activeAttendance = [];
+    for (const project of projectSchedules) {
+      const projectId = project.projectId;
+      const projectInfo = await this.projectModel.findById(projectId).lean();
+      if (projectInfo.createdBy !== userId) {
+        continue;
+      }
+      for (const schedule of project.schedules) {
+        if (
+          moment().isBetween(
+            new Date(schedule.startTime),
+            new Date(schedule.endTime),
+          )
+        ) {
+          activeAttendance.push({ ...projectInfo, activeSchedule: schedule });
+        }
+      }
+    }
+    return activeAttendance;
+  }
+
   async getProjectDetail(projectId: string) {
     const userId = this.request.user.id;
     const project = await this.projectModel.findById(projectId).lean();
@@ -56,7 +80,13 @@ export class ProjectsService {
       students.push(studentData);
     }
     const approverInfo = await this.usersService.findOne(project.createdBy);
-    return { ...project, isJoined, studentsInfo: students, approverInfo };
+    return {
+      ...project,
+      isJoined,
+      studentsInfo: students,
+      approverInfo,
+      schedules: schedules.schedules,
+    };
   }
 
   async getProjectsAttendance(projectId: string) {
