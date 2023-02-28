@@ -6,12 +6,24 @@ import { ProjectsController } from './projects.controller';
 import { ProjectJoinedModule } from 'v1/project-joined/project-joined.module';
 import { UsersModule } from 'v1/users/users.module';
 import { StudentModule } from 'v1/student/student.module';
+import {
+  ProjectSchedule,
+  ProjectScheduleSchema,
+  Schedule,
+  ScheduleSchema,
+} from '@schemas/project-schedule.schema';
 
 @Module({
   providers: [ProjectsService],
   exports: [ProjectsService],
   imports: [
     MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
+    MongooseModule.forFeature([
+      { name: ProjectSchedule.name, schema: ProjectScheduleSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: Schedule.name, schema: ScheduleSchema },
+    ]),
     ProjectJoinedModule,
     UsersModule,
     StudentModule,

@@ -18,7 +18,13 @@ export class CreateProjectDto {
 
   @ApiProperty()
   @IsArray()
-  public learnDate: string[];
+  public learnDate: {
+    time: string;
+    location?: {
+      lat: number;
+      lng: number;
+    };
+  }[];
 
   @ApiProperty()
   @IsNumber()

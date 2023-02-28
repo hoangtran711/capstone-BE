@@ -11,11 +11,21 @@ import { UsersService } from 'v1/users/users.service';
 import { StudentService } from 'v1/student/student.service';
 import * as moment from 'moment';
 import { RoleEnum } from '@common/interfaces';
+import { getDates } from 'utils/date.util';
+import {
+  ProjectSchedule,
+  ProjectScheduleDocument,
+  Schedule,
+  ScheduleDocument,
+} from '@schemas/project-schedule.schema';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
+    @InjectModel(ProjectSchedule.name)
+    private projectScheduleModel: Model<ProjectScheduleDocument>,
+    @InjectModel(Schedule.name) private scheduleModel: Model<ScheduleDocument>,
     private usersService: UsersService,
     private projectJoinedService: ProjectJoinedService,
     private studentServices: StudentService,
@@ -165,14 +175,32 @@ export class ProjectsService {
       throw new BadRequestException();
     }
     const learnDateFormated = [];
+    const schedules = [];
     for (let i = 0; i < learnDate.length; i++) {
-      const date = new Date(learnDate[i]);
+      const date = new Date(learnDate[i].time);
       const dayOfWeek = date.getDay();
       const atHour = date.getHours();
       const atMinute = date.getMinutes();
       const atSecond = date.getSeconds();
       learnDateFormated.push({ dayOfWeek, atHour, atMinute, atSecond });
+      let times = [...getDates(startDate, endDate, dayOfWeek)];
+      console.log(learnDate[i].location);
+      for (const time of times) {
+        schedules.push(
+          new this.scheduleModel({
+            location: learnDate[i].location,
+            time,
+            attendanceAt: [
+              {
+                start: moment(time),
+                end: moment(time).add(attendanceAfterMinute, 'minutes'),
+              },
+            ],
+          }),
+        );
+      }
     }
+
     const newProject = new this.projectModel({
       projectName,
       projectDescription,
@@ -185,6 +213,12 @@ export class ProjectsService {
       joined: 0,
       createdBy: this.request.user.id,
     });
+
+    const newSchedule = new this.projectScheduleModel({
+      projectId: newProject._id,
+      schedules: schedules,
+    });
+    await newSchedule.save();
 
     return await newProject.save();
   }

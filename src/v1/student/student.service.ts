@@ -10,7 +10,6 @@ import {
   StudentSchedulesDocument,
 } from '@schemas/student-schedule.schema';
 import { LIMIT_DISTANCE_IN_KM } from 'constants/geolocation';
-import { TIME_IN_ONE_LESSON } from 'constants/lesson';
 
 import * as moment from 'moment';
 import { Model } from 'mongoose';
@@ -257,96 +256,8 @@ export class StudentService {
       await newRecordProject.save();
     }
 
-    let scheduleTimes = [];
     foundProject.joined = foundProject.joined + 1;
     await foundProject.save();
-
-    const startDate = moment(foundProject.startDate);
-    const endDate = moment(foundProject.endDate);
-    for (let i = 0; i < foundProject.learnDate.length; i++) {
-      const day = foundProject.learnDate[i].dayOfWeek;
-      const atHour = foundProject.learnDate[i].atHour;
-      const atMinute = foundProject.learnDate[i].atMinute;
-      const atSecond = foundProject.learnDate[i].atSecond;
-      const totalLesson = foundProject.totalLesson;
-      const attendaceAfter = foundProject.attendanceAfterMinute;
-      const dates = [];
-      let current = startDate.clone();
-      let current2 = startDate.clone();
-      if (current2.day(day).isBefore(moment())) {
-        const timeStart = `${atHour}:${atMinute}:${atSecond}`;
-        const dateLearn = current2.clone().format('dddd, MMMM Do YYYY');
-        console.log(dateLearn);
-        const date = `${dateLearn}, ${timeStart}`;
-        dates.push(date);
-      }
-      while (current.day(7 + day).isBefore(endDate)) {
-        const timeStart = `${atHour}:${atMinute}:${atSecond}`;
-        const dateLearn = current.clone().format('dddd, MMMM Do YYYY');
-        const date = `${dateLearn}, ${timeStart}`;
-        dates.push(date);
-      }
-
-      for (let j = 0; j < dates.length; j++) {
-        scheduleTimes.push({
-          date: dates[j],
-          atHour,
-          atMinute,
-          atSecond,
-          totalLesson,
-          attendaceAfter,
-        });
-      }
-    }
-    const foundStudentSchedule = await this.studentSchedulesModel.findOne({
-      studentId: userId,
-    });
-    if (!foundStudentSchedule) {
-      const newStudentSchedule = new this.studentSchedulesModel({
-        studentId: userId,
-        schedules: [{ projectId, times: scheduleTimes }],
-      });
-      return await newStudentSchedule.save();
-    } else {
-      const oldSchedule = [...foundStudentSchedule.schedules];
-      for (let i = 0; i < oldSchedule.length; i++) {
-        for (let j = 0; j < oldSchedule[i].times.length; j++) {
-          const timeDupplicated = scheduleTimes.find(
-            (item) => item.date === oldSchedule[i].times[j].date,
-          );
-          if (timeDupplicated) {
-            const oldTotalLesson = oldSchedule[i].times[j].totalLesson;
-            const totalLesson = timeDupplicated.totalLesson;
-            const oldAtHour = oldSchedule[i].times[j].atHour;
-            const oldAtMinute = oldSchedule[i].times[j].atMinute;
-            const oldAtSecond = oldSchedule[i].times[j].atSecond;
-            const atHour = timeDupplicated.atHour;
-            const atMinute = timeDupplicated.atMinute;
-            const atSecond = timeDupplicated.atSecond;
-            const timeOld = `${oldAtHour}:${oldAtMinute}:${oldAtSecond}`;
-            const timeEndOld = `${
-              oldAtHour + oldTotalLesson * TIME_IN_ONE_LESSON
-            }:${oldAtMinute}:${oldAtSecond}`;
-            const time = `${atHour}:${atMinute}:${atSecond}`;
-            const timeEnd = `${
-              atHour + totalLesson * TIME_IN_ONE_LESSON
-            }:${atMinute}:${atSecond}`;
-            const isBetweenStartTime = time >= timeOld && time <= timeEndOld;
-            const isBetweenEndTime =
-              timeEnd >= timeOld && timeEnd <= timeEndOld;
-            if (isBetweenStartTime || isBetweenEndTime) {
-              throw new BadRequestException(
-                ErrorMessage.Student_DuplicatedSchedule,
-              );
-            }
-          }
-        }
-      }
-      oldSchedule.push({ projectId, times: scheduleTimes });
-      foundStudentSchedule.schedules = oldSchedule;
-
-      return await foundStudentSchedule.save();
-    }
   }
 
   private async getAllSchedules(userId: string) {
